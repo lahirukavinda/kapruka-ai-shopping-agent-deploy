@@ -32,25 +32,41 @@ function parseProducts(data: unknown): Product[] {
 
     const products = parsed?.products || parsed?.results || parsed?.items;
     if (Array.isArray(products)) {
-      return products.map((p: Record<string, unknown>) => ({
-        id: String(p.id || p.product_id || ""),
-        name: String(p.name || p.title || ""),
-        price: Number(p.price || p.selling_price || 0),
-        currency: (String(p.currency || "LKR")) as "LKR" | "USD",
-        imageUrl: String(p.image_url || p.imageUrl || p.image || ""),
-        images: Array.isArray(p.images) ? p.images.map(String) : undefined,
-        description: p.description ? String(p.description) : undefined,
-        category: p.category ? String(p.category) : undefined,
-        inStock: p.in_stock !== false && p.inStock !== false,
-        rating: p.rating ? Number(p.rating) : undefined,
-        variants: Array.isArray(p.variants)
-          ? p.variants.map((v: Record<string, unknown>) => ({
-              id: String(v.id || ""),
-              name: String(v.name || ""),
-              value: String(v.value || ""),
-            }))
-          : undefined,
-      }));
+      return products.map((p: Record<string, unknown>) => {
+        const priceObj = p.price as { amount?: number; currency?: string } | number | null;
+        const price = typeof priceObj === "object" && priceObj !== null
+          ? Number(priceObj.amount || 0)
+          : Number(priceObj || p.selling_price || 0);
+        const currency = typeof priceObj === "object" && priceObj !== null
+          ? String(priceObj.currency || "LKR")
+          : String(p.currency || "LKR");
+        const catObj = p.category as { name?: string } | string | null;
+        const category = typeof catObj === "object" && catObj !== null
+          ? String(catObj.name || "")
+          : catObj ? String(catObj) : undefined;
+
+        return {
+          id: String(p.id || p.product_id || ""),
+          name: String(p.name || p.title || ""),
+          price,
+          currency: currency as "LKR" | "USD",
+          imageUrl: String(p.image_url || p.imageUrl || p.image || ""),
+          images: Array.isArray(p.images) ? p.images.map(String) : undefined,
+          description: p.description ? String(p.description) : p.summary ? String(p.summary) : undefined,
+          category,
+          inStock: p.in_stock !== false && p.inStock !== false,
+          stockLevel: p.stock_level ? String(p.stock_level) as "high" | "medium" | "low" : undefined,
+          rating: p.rating ? Number(p.rating) : undefined,
+          url: p.url ? String(p.url) : undefined,
+          variants: Array.isArray(p.variants)
+            ? p.variants.map((v: Record<string, unknown>) => ({
+                id: String(v.id || ""),
+                name: String(v.name || ""),
+                value: String(v.value || ""),
+              }))
+            : undefined,
+        };
+      });
     }
     return [];
   } catch {

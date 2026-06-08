@@ -6,68 +6,70 @@ export const kaprukaSearchProducts = tool({
   description:
     "Search the Kapruka product catalog by keyword with optional filters for category, price range, stock status, and sorting.",
   parameters: z.object({
-    q: z.string().describe("Search query keyword"),
-    category: z.string().optional().describe("Filter by category name"),
-    min_price: z.number().optional().describe("Minimum price filter"),
-    max_price: z.number().optional().describe("Maximum price filter"),
-    page_size: z.number().optional().default(5).describe("Number of results (default 5)"),
-    page: z.number().optional().default(1).describe("Page number for pagination"),
+    q: z.string().min(3).describe("Search query (e.g. 'birthday cake', 'roses', 'chocolates')"),
+    category: z.string().optional().describe("Filter by category name (e.g. 'Birthday', 'Cakes')"),
+    min_price: z.number().optional().describe("Minimum price (inclusive)"),
+    max_price: z.number().optional().describe("Maximum price (inclusive)"),
+    limit: z.number().optional().default(10).describe("Number of results (1-50, default 10)"),
     sort: z
-      .enum(["relevance", "price_asc", "price_desc", "newest", "popularity"])
+      .enum(["relevance", "price_asc", "price_desc", "newest", "bestseller"])
       .optional()
       .default("relevance")
       .describe("Sort order"),
-    in_stock_only: z.boolean().optional().default(true).describe("Only show in-stock items"),
-    currency: z.enum(["LKR", "USD"]).optional().default("LKR").describe("Currency for prices"),
-    response_format: z.enum(["json", "text"]).optional().default("json"),
+    in_stock_only: z.boolean().optional().default(false).describe("Only show in-stock items"),
+    currency: z.enum(["LKR", "USD", "GBP", "AUD", "CAD", "EUR"]).optional().default("LKR"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_search_products", args);
-    return result;
+    return await callMcpTool("kapruka_search_products", { params: args });
   },
 });
 
 export const kaprukaGetProduct = tool({
-  description: "Get full product details by product ID including name, price, variants, images, and shipping info.",
+  description: "Get full product details by product ID including name, price, description, variants, images, stock, and shipping info.",
   parameters: z.object({
-    id: z.string().describe("Product ID"),
-    currency: z.enum(["LKR", "USD"]).optional().default("LKR"),
+    product_id: z.string().describe("Kapruka product ID (e.g. 'cake00ka002034')"),
+    currency: z.enum(["LKR", "USD", "GBP", "AUD", "CAD", "EUR"]).optional().default("LKR"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_get_product", args);
-    return result;
+    return await callMcpTool("kapruka_get_product", { params: args });
   },
 });
 
 export const kaprukaListCategories = tool({
   description: "List all top-level product categories available on Kapruka with browse URLs.",
-  parameters: z.object({}),
-  execute: async () => {
-    const result = await callMcpTool("kapruka_list_categories", {});
-    return result;
+  parameters: z.object({
+    depth: z.number().min(1).max(2).optional().default(1).describe("Sub-category levels (1 or 2)"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
+  }),
+  execute: async (args) => {
+    return await callMcpTool("kapruka_list_categories", { params: args });
   },
 });
 
 export const kaprukaListDeliveryCities = tool({
-  description: "Search the Kapruka delivery network by city name or alias to find deliverable cities.",
+  description: "Search the Kapruka delivery network by city name to find deliverable cities.",
   parameters: z.object({
-    q: z.string().describe("City name or alias to search"),
+    query: z.string().optional().describe("Filter cities by partial name match (e.g. 'Colombo')"),
+    limit: z.number().optional().default(25).describe("Max cities to return (1-50)"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_list_delivery_cities", args);
-    return result;
+    return await callMcpTool("kapruka_list_delivery_cities", { params: args });
   },
 });
 
 export const kaprukaCheckDelivery = tool({
-  description: "Check delivery availability, estimated date, and rate for a specific city and product combination.",
+  description: "Check delivery availability, estimated dates, and rates for a specific city.",
   parameters: z.object({
-    city_id: z.string().describe("Delivery city ID"),
-    product_id: z.string().describe("Product ID to check delivery for"),
+    city: z.string().describe("Canonical city name (e.g. 'Colombo 03', 'Galle')"),
+    delivery_date: z.string().optional().describe("Target delivery date in ISO format (YYYY-MM-DD)"),
+    product_id: z.string().optional().describe("Optional product ID for perishable warnings"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_check_delivery", args);
-    return result;
+    return await callMcpTool("kapruka_check_delivery", { params: args });
   },
 });
 
@@ -84,7 +86,7 @@ export const kaprukaCreateOrder = tool({
         })
       )
       .describe("Items to order"),
-    delivery_city_id: z.string().describe("Delivery city ID"),
+    delivery_city: z.string().describe("Delivery city name"),
     recipient_name: z.string().describe("Recipient name"),
     recipient_phone: z.string().describe("Recipient phone number"),
     recipient_address: z.string().describe("Delivery address"),
@@ -92,8 +94,7 @@ export const kaprukaCreateOrder = tool({
     currency: z.enum(["LKR", "USD"]).optional().default("LKR"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_create_order", args);
-    return result;
+    return await callMcpTool("kapruka_create_order", { params: args });
   },
 });
 
@@ -101,10 +102,10 @@ export const kaprukaTrackOrder = tool({
   description: "Track the status of an existing order by order number.",
   parameters: z.object({
     order_number: z.string().describe("Order number (e.g. KAP-12345)"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    const result = await callMcpTool("kapruka_track_order", args);
-    return result;
+    return await callMcpTool("kapruka_track_order", { params: args });
   },
 });
 
