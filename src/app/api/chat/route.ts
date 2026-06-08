@@ -4,7 +4,8 @@ import type { CoreMessage } from "ai";
 
 // Support both GitHub Models (free) and OpenAI directly
 const apiKey = process.env.GITHUB_TOKEN || process.env.OPENAI_API_KEY || "";
-const baseURL = process.env.GITHUB_TOKEN
+const isGitHubModels = !!process.env.GITHUB_TOKEN;
+const baseURL = isGitHubModels
   ? "https://models.inference.ai.azure.com"
   : undefined;
 
@@ -13,55 +14,80 @@ const openai = createOpenAI({
   baseURL,
 });
 
-function selectModel(messages: { role: string; content: string }[]): string {
-  const lastUserMsg = [...messages]
-    .reverse()
-    .find((m) => m.role === "user")?.content || "";
-
-  const isComplex =
-    lastUserMsg.length > 100 ||
-    /compar|recommend|suggest|which.*better|help me choose|opinion/i.test(lastUserMsg) ||
-    /broke up|sad|miss|sorry|anniversary|birthday|celebration/i.test(lastUserMsg);
-
-  return isComplex ? "gpt-4o" : "gpt-4o-mini";
+// GitHub Models free tier: 8,000 total tokens for ALL models (gpt-4o and gpt-4o-mini).
+// That includes system prompt + tool definitions + messages + response combined.
+// Always use gpt-4o-mini on GitHub Models.
+function selectModel(): string {
+  return isGitHubModels ? "gpt-4o-mini" : "gpt-4o-mini";
 }
 
-// Rough token estimate: ~4 chars per token for English text
+// Estimate tokens from the FULL serialized message including tool results.
 function estimateTokens(msg: CoreMessage): number {
-  const content = typeof msg.content === "string"
-    ? msg.content
-    : JSON.stringify(msg.content);
-  return Math.ceil(content.length / 4) + 4; // +4 for role/overhead
+  const serialized = JSON.stringify(msg);
+  return Math.ceil(serialized.length / 4) + 4;
 }
 
-// Keep recent messages within a token budget.
-// System prompt (~1500 tok) + tools (~1500 tok) + response (~1000 tok) ≈ 4000.
-// That leaves ~4000 for messages on the 8000-token gpt-4o plan.
-const MESSAGE_TOKEN_BUDGET = 3500;
+function estimateTotalTokens(messages: CoreMessage[]): number {
+  return messages.reduce((sum, msg) => sum + estimateTokens(msg), 0);
+}
+
+// Be very conservative: 8000 limit, reserve 6000 for system+tools+response,
+// leaving only ~2000 tokens for messages. This accounts for tool defs being
+// larger than initially estimated.
+const MESSAGE_BUDGET = 2000;
+
+// Strip all non-text content from messages to save tokens.
+// Tool invocations (product lists, categories, delivery info) are huge JSON
+// blobs that the model doesn't need to see in history.
+function compactMessage(msg: CoreMessage): CoreMessage {
+  if (msg.role === "user") {
+    const content = typeof msg.content === "string"
+      ? msg.content
+      : JSON.stringify(msg.content);
+    return { role: "user", content: content.slice(0, 500) };
+  }
+
+  if (msg.role === "assistant") {
+    const content = typeof msg.content === "string" ? msg.content : "";
+    if (content) {
+      return { role: "assistant", content: content.slice(0, 300) };
+    }
+    return { role: "assistant", content: "(results shown to user)" };
+  }
+
+  // Tool results, system messages - summarize aggressively
+  return { role: "assistant" as const, content: "(previous context)" };
+}
 
 function trimMessages(messages: CoreMessage[]): CoreMessage[] {
-  // Always keep the first (system context) message and the last user message.
-  if (messages.length <= 2) return messages;
+  if (!messages.length) return [];
 
+  // Always compact all messages to remove tool invocations
+  const compacted = messages.map(compactMessage);
+
+  // If within budget, return all compacted messages
+  if (estimateTotalTokens(compacted) <= MESSAGE_BUDGET) {
+    return compacted;
+  }
+
+  // Walk backwards, keeping as many recent messages as fit
   const result: CoreMessage[] = [];
-  let budget = MESSAGE_TOKEN_BUDGET;
+  let remaining = MESSAGE_BUDGET;
 
-  // Walk backwards to prioritise recent context
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const cost = estimateTokens(messages[i]);
-    if (cost <= budget) {
-      result.unshift(messages[i]);
-      budget -= cost;
+  for (let i = compacted.length - 1; i >= 0; i--) {
+    const cost = estimateTokens(compacted[i]);
+    if (cost <= remaining) {
+      result.unshift(compacted[i]);
+      remaining -= cost;
+    } else if (result.length === 0) {
+      // Must include at least the last message, truncated
+      const text = typeof compacted[i].content === "string"
+        ? compacted[i].content
+        : JSON.stringify(compacted[i].content);
+      const truncated = (text as string).slice(0, Math.max(remaining * 4, 100));
+      result.unshift({ role: "user", content: truncated });
+      break;
     } else {
-      // If we can't fit the whole message, try to include a truncated version
-      // for the most recent user message
-      if (i === messages.length - 1 && messages[i].role === "user") {
-        const content = typeof messages[i].content === "string"
-          ? messages[i].content
-          : JSON.stringify(messages[i].content);
-        const truncated = (content as string).slice(0, budget * 4);
-        result.unshift({ role: "user", content: truncated });
-      }
       break;
     }
   }
@@ -73,7 +99,7 @@ function isRateLimitError(err: unknown): boolean {
   if (typeof err === "object" && err !== null) {
     const e = err as Record<string, unknown>;
     if (e.statusCode === 429) return true;
-    if (typeof e.message === "string" && /rate.?limit|too many requests|tokens_limit/i.test(e.message)) return true;
+    if (typeof e.message === "string" && /rate.?limit|too many requests/i.test(e.message)) return true;
   }
   return false;
 }
@@ -96,9 +122,10 @@ const MAX_RETRIES = 2;
 export async function POST(req: Request) {
   try {
     const { messages: rawMessages, language = "en" } = await req.json();
+
+    const model = selectModel();
     let messages = trimMessages(rawMessages);
 
-    const model = selectModel(messages as { role: string; content: string }[]);
     const classifierModel = openai("gpt-4o-mini");
     const agentModel = openai(model);
 
@@ -112,19 +139,33 @@ export async function POST(req: Request) {
           messages,
           language,
         });
+
+        // Eagerly consume the first text chunk to catch 413/429 errors
+        // that the API returns before streaming starts.
+        // This forces the underlying HTTP request to complete its initial handshake.
+        const fullStream = result.fullStream;
+        const reader = fullStream.getReader();
+        await reader.read();
+        reader.releaseLock();
+
+        // If we get here without throwing, the stream is valid.
+        // Return the data stream response normally.
         return result.toDataStreamResponse();
       } catch (err) {
         lastError = err;
         console.error(`Chat API error (attempt ${attempt + 1}):`, err);
 
         if (isBodyTooLargeError(err)) {
-          // Aggressively trim and retry once
-          messages = messages.slice(-3);
+          // Aggressively trim: keep only the last user message
+          const lastUser = [...messages].reverse().find(m => m.role === "user");
+          messages = lastUser
+            ? [{ role: "user" as const, content: (typeof lastUser.content === "string" ? lastUser.content : "").slice(0, 200) }]
+            : messages.slice(-1);
           continue;
         }
 
         if (isRateLimitError(err) && attempt < MAX_RETRIES) {
-          const delay = 1000 * Math.pow(2, attempt); // 1s, 2s
+          const delay = 1000 * Math.pow(2, attempt);
           await sleep(delay);
           continue;
         }
@@ -133,14 +174,18 @@ export async function POST(req: Request) {
       }
     }
 
-    // Determine user-friendly error
-    const code = isRateLimitError(lastError) ? "RATE_LIMITED" : "UNKNOWN";
-    const message = code === "RATE_LIMITED"
-      ? "Kapri is getting a lot of requests right now. Please wait a moment and try again."
-      : "Something went wrong. Please try again.";
+    const isRateLimit = isRateLimitError(lastError);
+    const isTokenLimit = isBodyTooLargeError(lastError);
+    const code = isRateLimit ? "RATE_LIMITED" : isTokenLimit ? "TOKEN_LIMIT" : "UNKNOWN";
 
-    return new Response(JSON.stringify({ error: message, code }), {
-      status: code === "RATE_LIMITED" ? 429 : 500,
+    const errorMessages: Record<string, string> = {
+      RATE_LIMITED: "Kapri is getting a lot of requests right now. Please wait a moment and try again.",
+      TOKEN_LIMIT: "The conversation got too long. Try starting a fresh chat or sending a shorter message.",
+      UNKNOWN: "Something went wrong. Please try again.",
+    };
+
+    return new Response(JSON.stringify({ error: errorMessages[code], code }), {
+      status: isRateLimit ? 429 : 500,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
