@@ -47,12 +47,36 @@ function renderMarkdown(text: string) {
     // Numbered list
     const numMatch = line.match(/^(\d+)\.\s+(.+)/);
     if (numMatch) {
+      const contentAfterNum = numMatch[2];
+      const processedContent = contentAfterNum.split(/(\*\*[^*]+\*\*)/g).map((part: string, j: number) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
+        }
+        const linkParts = part.split(/(\[[^\]]+\]\([^)]+\))/g);
+        return linkParts.map((lp: string, k: number) => {
+          const linkMatch2 = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+          if (linkMatch2) {
+            return (
+              <a
+                key={`${j}-${k}`}
+                href={linkMatch2[2]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+              >
+                {linkMatch2[1]}
+              </a>
+            );
+          }
+          return lp;
+        });
+      });
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
           <span className="text-amber-500 dark:text-amber-400 font-semibold text-xs min-w-[18px] text-right mt-0.5">
             {numMatch[1]}.
           </span>
-          <span className="flex-1">{processed}</span>
+          <span className="flex-1">{processedContent}</span>
         </div>
       );
       return;
@@ -60,10 +84,34 @@ function renderMarkdown(text: string) {
 
     // Bullet list
     if (line.startsWith("- ") || line.startsWith("• ")) {
+      const bulletContent = line.startsWith("- ") ? line.slice(2) : line.slice(2);
+      const processedBullet = bulletContent.split(/(\*\*[^*]+\*\*)/g).map((part: string, j: number) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
+        }
+        const linkParts = part.split(/(\[[^\]]+\]\([^)]+\))/g);
+        return linkParts.map((lp: string, k: number) => {
+          const linkMatch3 = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+          if (linkMatch3) {
+            return (
+              <a
+                key={`${j}-${k}`}
+                href={linkMatch3[2]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+              >
+                {linkMatch3[1]}
+              </a>
+            );
+          }
+          return lp;
+        });
+      });
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
           <span className="text-amber-500 dark:text-amber-400 mt-1">•</span>
-          <span className="flex-1">{processed}</span>
+          <span className="flex-1">{processedBullet}</span>
         </div>
       );
       return;
