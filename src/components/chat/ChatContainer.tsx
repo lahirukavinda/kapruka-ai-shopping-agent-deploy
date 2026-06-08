@@ -15,6 +15,7 @@ import ProductDetail from "@/components/products/ProductDetail";
 import CheckoutFlow, { type OrderDetails } from "@/components/checkout/CheckoutFlow";
 import KapriAvatar from "./KapriAvatar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCart } from "@/contexts/CartContext";
 import type { AvatarState, Product } from "@/types";
 
 function getAvatarState(isLoading: boolean, messages: Message[]): AvatarState {
@@ -33,6 +34,7 @@ function getAvatarState(isLoading: boolean, messages: Message[]): AvatarState {
 
 export default function ChatContainer() {
   const { language } = useLanguage();
+  const { state: cartState } = useCart();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -119,8 +121,12 @@ export default function ChatContainer() {
   const handlePlaceOrder = useCallback(
     (details: OrderDetails) => {
       setIsCheckoutOpen(false);
+      const itemLines = cartState.items.map(
+        (item) => `- ${item.name} (ID: ${item.productId}, qty: ${item.quantity}, LKR ${item.price})`
+      );
       const msg = [
-        `Place my order:`,
+        `Place my order with these items:`,
+        ...itemLines,
         `Delivery to ${details.deliveryCity}`,
         `Recipient: ${details.recipientName}`,
         `Phone: ${details.recipientPhone}`,
@@ -129,7 +135,7 @@ export default function ChatContainer() {
       ].filter(Boolean).join("\n");
       handleSendMessage(msg);
     },
-    [handleSendMessage]
+    [handleSendMessage, cartState.items]
   );
 
   const handleCategorySelect = useCallback(
