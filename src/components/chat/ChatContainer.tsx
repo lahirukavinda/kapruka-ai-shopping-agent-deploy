@@ -42,13 +42,22 @@ export default function ChatContainer() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
 
   const { messages, isLoading, append } = useChat({
     api: "/api/chat",
     body: { language },
     onError: (err) => {
       console.error("Chat error:", err);
-      setError("Oops! Something went wrong. Please try again.");
+      const isRateLimit = err.message?.includes("429") ||
+        /rate.?limit|too many requests|wait a moment/i.test(err.message || "");
+      if (isRateLimit) {
+        setError("Kapri is a bit busy right now. Retrying shortly...");
+        setRetryCountdown(5);
+      } else {
+        setError("Something went wrong. Tap retry or send your message again.");
+      }
     },
   });
 
@@ -62,13 +71,38 @@ export default function ChatContainer() {
     if (messages.length > 0) setShowWelcome(false);
   }, [messages]);
 
+  // Auto-retry countdown for rate limit errors
+  useEffect(() => {
+    if (retryCountdown <= 0) return;
+    if (retryCountdown === 1 && lastFailedMessage) {
+      // Auto-retry when countdown hits 0
+      setRetryCountdown(0);
+      setError(null);
+      append({ role: "user", content: lastFailedMessage });
+      setLastFailedMessage(null);
+      return;
+    }
+    const timer = setTimeout(() => setRetryCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [retryCountdown, lastFailedMessage, append]);
+
   const handleSendMessage = useCallback(
     (text: string) => {
       setError(null);
+      setLastFailedMessage(text);
+      setRetryCountdown(0);
       append({ role: "user", content: text });
     },
     [append]
   );
+
+  const handleRetry = useCallback(() => {
+    if (!lastFailedMessage) return;
+    setError(null);
+    setRetryCountdown(0);
+    append({ role: "user", content: lastFailedMessage });
+    setLastFailedMessage(null);
+  }, [lastFailedMessage, append]);
 
   const handleQuickAction = useCallback(
     (text: string) => {
@@ -261,9 +295,21 @@ export default function ChatContainer() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm">
-                <span className="text-base">⚠️</span>
-                {error}
+              <div className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm">
+                <span className="text-base">{retryCountdown > 0 ? "⏳" : "⚠️"}</span>
+                <span className="flex-1">
+                  {retryCountdown > 0
+                    ? `${error} (${retryCountdown}s)`
+                    : error}
+                </span>
+                {retryCountdown === 0 && lastFailedMessage && (
+                  <button
+                    onClick={handleRetry}
+                    className="ml-2 px-3 py-1 rounded-lg bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 text-amber-800 dark:text-amber-200 text-xs font-medium transition-colors"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

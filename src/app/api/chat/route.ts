@@ -69,28 +69,85 @@ function trimMessages(messages: CoreMessage[]): CoreMessage[] {
   return result;
 }
 
+function isRateLimitError(err: unknown): boolean {
+  if (typeof err === "object" && err !== null) {
+    const e = err as Record<string, unknown>;
+    if (e.statusCode === 429) return true;
+    if (typeof e.message === "string" && /rate.?limit|too many requests|tokens_limit/i.test(e.message)) return true;
+  }
+  return false;
+}
+
+function isBodyTooLargeError(err: unknown): boolean {
+  if (typeof err === "object" && err !== null) {
+    const e = err as Record<string, unknown>;
+    if (e.statusCode === 413) return true;
+    if (typeof e.message === "string" && /too large|tokens_limit_reached/i.test(e.message)) return true;
+  }
+  return false;
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const MAX_RETRIES = 2;
+
 export async function POST(req: Request) {
   try {
     const { messages: rawMessages, language = "en" } = await req.json();
-    const messages = trimMessages(rawMessages);
+    let messages = trimMessages(rawMessages);
 
     const model = selectModel(messages as { role: string; content: string }[]);
     const classifierModel = openai("gpt-4o-mini");
     const agentModel = openai(model);
 
-    const result = await orchestrate({
-      classifierModel,
-      agentModel,
-      messages,
-      language,
-    });
+    let lastError: unknown = null;
 
-    return result.toDataStreamResponse();
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const result = await orchestrate({
+          classifierModel,
+          agentModel,
+          messages,
+          language,
+        });
+        return result.toDataStreamResponse();
+      } catch (err) {
+        lastError = err;
+        console.error(`Chat API error (attempt ${attempt + 1}):`, err);
+
+        if (isBodyTooLargeError(err)) {
+          // Aggressively trim and retry once
+          messages = messages.slice(-3);
+          continue;
+        }
+
+        if (isRateLimitError(err) && attempt < MAX_RETRIES) {
+          const delay = 1000 * Math.pow(2, attempt); // 1s, 2s
+          await sleep(delay);
+          continue;
+        }
+
+        break;
+      }
+    }
+
+    // Determine user-friendly error
+    const code = isRateLimitError(lastError) ? "RATE_LIMITED" : "UNKNOWN";
+    const message = code === "RATE_LIMITED"
+      ? "Kapri is getting a lot of requests right now. Please wait a moment and try again."
+      : "Something went wrong. Please try again.";
+
+    return new Response(JSON.stringify({ error: message, code }), {
+      status: code === "RATE_LIMITED" ? 429 : 500,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error: unknown) {
     console.error("Chat API error:", error);
     const message =
       error instanceof Error ? error.message : "Something went wrong";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: message, code: "UNKNOWN" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
