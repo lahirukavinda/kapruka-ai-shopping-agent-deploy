@@ -2,11 +2,28 @@
 
 ## Overview
 
-Build an AI-powered conversational shopping agent for the **Kapruka Agent Challenge**. The agent connects to the [Kapruka MCP](https://mcp.kapruka.com/mcp) (free, public, no API key) and provides a full-screen, visually rich chat experience for discovering products, browsing categories, getting delivery quotes, and completing checkout.
+Build an AI-powered conversational shopping agent for the **Kapruka Agent Challenge**. The agent connects to the [Kapruka MCP](https://mcp.kapruka.com/mcp) (free, public, no API key) and provides a full-screen, visually rich chat experience that feels **human, surprising, and genuinely helpful** — not a search box wearing a chat costume.
 
 **Challenge Page:** https://www.kapruka.com/contactUs/agentChallenge.html  
 **Deadline:** 30 June 2026  
-**Prize:** Apple M4 Mac Mini
+**Prize:** Apple M4 Mac Mini  
+**Applicant Mobile:** 94719293900
+
+---
+
+## Design Principles (from challenge team feedback)
+
+> *"The agents that win won't feel like a search box wearing a chat costume — they'll feel human, surprising, and genuinely helpful."*
+
+1. **Everyday shopper first, gifting second.** Kapruka is electronics, groceries, fashion, home essentials + thousands of third-party sellers. The majority of orders are people shopping for themselves. Build for that reality — gifting is one important mode among many.
+
+2. **Agent has opinions.** Don't just list products — read the situation, interpret intent, react with empathy, and *recommend*. Have a point of view. Example from the challenge team:
+   > 🧑 "I broke up with my girlfriend… I need to send some flowers."  
+   > 🤖 "Aiyo! 💔 Okay — here's the plan. I'll get the flowers to you, and you hand-deliver them. Trust me, that lands better than a courier. Shall I add a note card too?"
+
+3. **Multi-agent orchestration.** Behind the scenes, run multiple specialized agents — a Concierge that talks, a Shopper that searches, a Logistics agent that checks delivery. The user sees one seamless personality; the architecture is a team.
+
+4. **Local flavour.** Sinhala / Tanglish is the #1 differentiator. Sri Lankan cultural awareness in every interaction.
 
 ---
 
@@ -14,12 +31,12 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 | Criteria              | Points | Our Strategy                                              |
 |-----------------------|--------|-----------------------------------------------------------|
-| Experience & polish   | 30     | Streaming responses, micro-animations, mobile-first       |
-| Visual richness       | 20     | Product carousels, rich cards, animated avatar             |
-| Personality           | 15     | "Kapri" character, Tanglish/Sinhala support, warm tone     |
-| Usefulness            | 15     | Smart suggestions, budget awareness, delivery-aware recs   |
+| Experience & polish   | 30     | Streaming responses, micro-animations, mobile-first, no loading spinners |
+| Visual richness       | 20     | Product carousels, rich cards, animated avatar, dark/light mode |
+| Personality           | 15     | "Kapri" with opinions, empathy, local flavour, Sinhala/Tanglish |
+| Usefulness            | 15     | Smart recs for everyday shopping + gifting, budget/delivery awareness |
 | End-to-end complete   | 15     | Full flow: search → cart → delivery → checkout → tracking  |
-| Creativity            | 5      | Voice input, gift wizard, shareable cart                   |
+| Creativity            | 5      | Voice input, multi-agent architecture, situation-reading    |
 
 **Bonus points:** Multi-item carts, delivery-date constraints, gift messaging, Tanglish, Sinhala language support.
 
@@ -27,19 +44,20 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 ## Tech Stack
 
-| Layer       | Technology                                | Rationale                                             |
-|-------------|-------------------------------------------|-------------------------------------------------------|
-| Frontend    | Next.js 14 (App Router)                   | SSR, streaming, App Router for layouts                |
-| Styling     | Tailwind CSS + Framer Motion              | Rapid UI, polished animations                         |
-| AI/LLM      | Vercel AI SDK + OpenAI GPT-4o (or Claude) | Streaming, tool-calling, MCP integration              |
-| MCP Client  | Official MCP TypeScript SDK               | Direct integration with Kapruka MCP                   |
-| Deployment  | Vercel (free tier)                        | Instant public URL, edge functions                    |
+| Layer            | Technology                                | Rationale                                             |
+|------------------|-------------------------------------------|-------------------------------------------------------|
+| Frontend         | Next.js 14 (App Router)                   | SSR, streaming, App Router for layouts                |
+| Styling          | Tailwind CSS + Framer Motion              | Rapid UI, polished animations                         |
+| AI Orchestration | Vercel AI SDK + OpenAI GPT-4o (or Claude) | Streaming, tool-calling, multi-agent support          |
+| MCP Client       | Official MCP TypeScript SDK               | Direct integration with Kapruka MCP                   |
+| Deployment       | Vercel (free tier)                        | Instant public URL, edge functions                    |
 
 ---
 
 ## MCP Integration
 
 **Endpoint:** `https://mcp.kapruka.com/mcp`  
+**Docs:** https://mcp.kapruka.com  
 **Transport:** Streamable HTTP  
 **Auth:** None required  
 **Rate Limits:** 60 req/min, 30 orders/hr per IP  
@@ -73,40 +91,85 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 ---
 
-## Architecture
+## Architecture — Multi-Agent Design
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Browser                        │
-│  ┌─────────────────────────────────────────────┐ │
-│  │           Next.js Frontend                   │ │
-│  │  ┌──────────┐  ┌──────────┐  ┌───────────┐ │ │
-│  │  │ Chat UI  │  │ Product  │  │   Cart     │ │ │
-│  │  │ Messages │  │ Cards /  │  │  Sidebar   │ │ │
-│  │  │ + Input  │  │ Carousel │  │  + Total   │ │ │
-│  │  └──────────┘  └──────────┘  └───────────┘ │ │
-│  └──────────────────┬──────────────────────────┘ │
-└─────────────────────┼───────────────────────────┘
-                      │ Vercel AI SDK (streaming)
-┌─────────────────────┼───────────────────────────┐
-│              API Routes (Next.js)                │
-│  ┌──────────────────┴──────────────────────────┐ │
-│  │         LLM (GPT-4o / Claude)               │ │
-│  │         with tool-calling                    │ │
-│  │              │                               │ │
-│  │    ┌─────────┴─────────┐                     │ │
-│  │    │   MCP Client      │                     │ │
-│  │    │   (TypeScript SDK) │                     │ │
-│  │    └─────────┬─────────┘                     │ │
-│  └──────────────┼──────────────────────────────┘ │
-└─────────────────┼───────────────────────────────┘
-                  │ Streamable HTTP
-┌─────────────────┼───────────────────────────────┐
-│        Kapruka MCP Server                        │
-│        https://mcp.kapruka.com/mcp               │
-│        (7 tools, public, no auth)                │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                        Browser                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │                  Next.js Frontend                         │ │
+│  │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌────────┐ │ │
+│  │  │ Chat UI  │  │ Product   │  │  Cart    │  │ Quick  │ │ │
+│  │  │ Messages │  │ Cards /   │  │ Sidebar  │  │ Actions│ │ │
+│  │  │ + Input  │  │ Carousel  │  │ + Total  │  │ Bar    │ │ │
+│  │  └──────────┘  └───────────┘  └──────────┘  └────────┘ │ │
+│  └──────────────────────┬───────────────────────────────────┘ │
+└─────────────────────────┼────────────────────────────────────┘
+                          │ Vercel AI SDK (streaming)
+┌─────────────────────────┼────────────────────────────────────┐
+│                  API Routes (Next.js)                         │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │              🎭 CONCIERGE AGENT (orchestrator)          │  │
+│  │  Owns the conversation. Reads the situation,           │  │
+│  │  picks tone, decides what to do next.                  │  │
+│  │  Delegates to specialist agents:                       │  │
+│  │                                                        │  │
+│  │  ┌──────────────────┐  ┌──────────────────────────┐   │  │
+│  │  │ 🛒 SHOPPER AGENT │  │ 🚚 LOGISTICS AGENT       │   │  │
+│  │  │ Search, browse,  │  │ Delivery cities, dates,  │   │  │
+│  │  │ compare products,│  │ rates, feasibility check  │   │  │
+│  │  │ get details,     │  │                           │   │  │
+│  │  │ manage cart       │  │                           │   │  │
+│  │  └────────┬─────────┘  └─────────────┬────────────┘   │  │
+│  │           │                           │                │  │
+│  │           └──────────┬────────────────┘                │  │
+│  │                      │                                 │  │
+│  │            ┌─────────┴─────────┐                       │  │
+│  │            │   MCP Client      │                       │  │
+│  │            │   (TypeScript SDK) │                       │  │
+│  │            └─────────┬─────────┘                       │  │
+│  └──────────────────────┼─────────────────────────────────┘  │
+└─────────────────────────┼────────────────────────────────────┘
+                          │ Streamable HTTP
+┌─────────────────────────┼────────────────────────────────────┐
+│              Kapruka MCP Server                               │
+│              https://mcp.kapruka.com/mcp                      │
+│              (7 tools, public, no auth)                        │
+└──────────────────────────────────────────────────────────────┘
 ```
+
+### Agent Roles
+
+| Agent | Role | MCP Tools Used |
+|-------|------|----------------|
+| **Concierge** | Orchestrator. Owns the conversation, reads emotional context, picks tone, decides whether to search/recommend/ask. Has opinions and local flavour. Delegates to specialists. | None directly — delegates |
+| **Shopper** | Product specialist. Searches catalog, fetches details, compares products, manages cart state. Understands categories and filters. | `kapruka_search_products`, `kapruka_get_product`, `kapruka_list_categories` |
+| **Logistics** | Delivery specialist. Checks city availability, delivery dates/rates, validates feasibility. Helps with "can I get X by Y date?" questions. | `kapruka_list_delivery_cities`, `kapruka_check_delivery` |
+
+The Concierge also handles `kapruka_create_order` and `kapruka_track_order` directly since these are full-flow actions.
+
+---
+
+## User Personas & Scenarios
+
+### Primary: Everyday Shopper (majority of orders)
+- "I need a new phone under 50,000 LKR"
+- "Show me groceries for weekly shopping"
+- "Compare these two laptops"
+- "What electronics are on sale?"
+- "Restock my kitchen essentials"
+
+### Secondary: Gift Sender
+- "I need a birthday gift for my mom in Kandy"
+- "I broke up with my girlfriend… need to send flowers"
+- "Anniversary gift ideas under 10,000 LKR, deliver by Saturday"
+- "Send chocolates to Colombo 07 with a message"
+
+### Tertiary: Order Manager
+- "Track my order KAP-12345"
+- "Can I get this delivered to Galle by Friday?"
+- "What delivery options are available for Jaffna?"
 
 ---
 
@@ -117,6 +180,7 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - Message bubbles with typing indicator and streaming text
 - Agent avatar ("Kapri") with subtle animations
 - Input bar at bottom with send button + voice input toggle
+- Quick-action chips: "Browse categories", "Track order", "Gift ideas"
 - Dark/light mode toggle
 
 ### 2. Product Cards
@@ -125,11 +189,13 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - Stock indicator (green/amber/red)
 - "View Details" and "Add to Cart" buttons
 - Quick-add animation on cart addition
+- Category badge for everyday items (Electronics, Grocery, etc.)
 
 ### 3. Product Carousel
 - Horizontal scrollable row of product cards
 - Swipeable on mobile, arrow navigation on desktop
 - Rendered inline within chat messages
+- Section headers ("Top picks for you", "Under LKR 5,000", etc.)
 
 ### 4. Product Detail View
 - Full product modal/overlay
@@ -137,19 +203,21 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - Variants selector (size, color, etc.)
 - Delivery checker (enter city → show date/rate)
 - "Add to Cart" with quantity selector
+- Agent's recommendation note ("Kapri says: Great value for the price!")
 
 ### 5. Cart Panel
 - Slide-out sidebar from right
 - Product thumbnails with quantity +/- controls
 - Running total with currency
-- Gift message input field (bonus!)
+- Gift message input field (optional, for gift mode)
 - "Proceed to Checkout" button
 
 ### 6. Checkout Flow
 - Delivery city selector with autocomplete
 - Delivery date/rate display
-- Order summary
-- "Pay Now" button → opens Kapruka pay link
+- Order summary with item breakdown
+- Gift message preview (if applicable)
+- "Pay Now" button → opens Kapruka pay link (60min price lock)
 - Order confirmation with tracking number
 
 ### 7. Order Tracking
@@ -162,19 +230,31 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 ### Character
 - **Name:** Kapri
+- **Core trait:** Has opinions. Doesn't just list — recommends, reacts, has a point of view.
 - **Tone:** Warm, helpful, slightly playful, knowledgeable about Sri Lankan culture
-- **Greeting:** "Ayubowan! I'm Kapri, your personal shopping assistant at Kapruka. What are you looking for today?"
+- **Greeting:** "Ayubowan! 🙏 I'm Kapri, your shopping buddy at Kapruka. What can I help you find today?"
+
+### Key Behaviours
+- **Reads the situation:** If someone says "I broke up with my girlfriend," Kapri reacts with empathy before jumping to products
+- **Has opinions:** "Honestly? The 128GB model is better value — the 64GB fills up fast with photos"
+- **Proactive:** "Since you're getting groceries, want me to add some essentials you might be running low on?"
+- **Local flavour:** Uses Sri Lankan expressions naturally — "Aiyo!", "machang", cultural references
+- **Remembers context:** Builds on previous messages in the conversation
 
 ### Language Support
 - **English** (default)
-- **Tanglish** — understands mixed Sinhala/English input (e.g., "mama birthday gift ekak hoyanne")
-- **Sinhala** — full Sinhala mode toggle for the entire conversation (bonus points!)
+- **Tanglish** — seamlessly understands mixed Sinhala/English (e.g., "mama phone ekak ganna one, budget eka 50k")
+- **Sinhala** — full Sinhala mode toggle (top differentiator per challenge team)
 
-### Context-Aware Responses
-- Gift occasions: "Great choice for a birthday! Want me to add a gift message?"
-- Budget awareness: "Here are the best options under LKR 5,000"
-- Delivery urgency: "Need it by Friday? Let me check what's available for express delivery"
-- Cross-sell: "People buying chocolates often pair them with flowers"
+### Everyday Shopping Responses
+- Budget: "Here are the best phones under LKR 50,000 — I'd go with the Redmi for everyday use"
+- Comparison: "Both are solid, but the Samsung has a better camera. The Xiaomi wins on battery life though"
+- Restock: "Weekly grocery run? Let me pull up your essentials — rice, dhal, coconut milk…"
+
+### Gift Mode Responses
+- Occasion reading: "Ayubowan! A birthday gift for amma? Let me find something special 🎂"
+- Delivery awareness: "Kandy delivery takes 1-2 days. I can get it there by Thursday if we order now"
+- Suggestion: "How about flowers with a box of chocolates? That combo always lands well"
 
 ---
 
@@ -182,6 +262,7 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 ### Core (Must-Have)
 - [ ] Full-screen chat UI with streaming responses
+- [ ] Multi-agent orchestration (Concierge → Shopper + Logistics)
 - [ ] Product search with rich card results
 - [ ] Category browsing with visual tiles
 - [ ] Product detail view with images and variants
@@ -192,6 +273,8 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 ### Enhanced (Differentiation)
 - [ ] Multi-item shopping cart with running totals
 - [ ] Product comparison ("show these 3 side by side")
+- [ ] Agent opinions and recommendations (not just listings)
+- [ ] Everyday shopping flows (groceries, electronics, fashion)
 - [ ] Gift message support in checkout
 - [ ] Delivery-date constraints ("need it by Friday")
 - [ ] Smart suggestions and cross-selling
@@ -200,9 +283,9 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 
 ### Wow Factors (Creativity)
 - [ ] Voice input (Web Speech API)
-- [ ] Gift Occasion Wizard — guided flow: Occasion → Recipient → Budget → Curated picks
+- [ ] Situation-reading with emotional intelligence (breakup → empathy + action)
 - [ ] Animated "Kapri" avatar that reacts (thinking, excited, celebrating)
-- [ ] Shareable cart link
+- [ ] Quick-action chips for common flows
 - [ ] Dark/light mode
 
 ---
@@ -218,6 +301,7 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - [ ] Basic chat UI — full-screen, message bubbles, input bar
 - [ ] Streaming responses with typing indicator
 - [ ] Wire up `kapruka_search_products` and `kapruka_list_categories`
+- [ ] Basic Concierge agent system prompt
 
 ### Phase 2: Rich UI Components (Days 3-5)
 **Goal:** Visual product experience that impresses
@@ -228,22 +312,26 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - [ ] Category tiles with icons
 - [ ] Framer Motion animations for all transitions
 - [ ] Mobile responsive design
+- [ ] Quick-action chips
 
-### Phase 3: Shopping Flow (Days 6-8)
-**Goal:** End-to-end purchase flow
+### Phase 3: Multi-Agent + Shopping Flow (Days 6-8)
+**Goal:** Multi-agent orchestration and end-to-end purchase
 
+- [ ] Implement Shopper agent (search, details, compare, cart)
+- [ ] Implement Logistics agent (cities, delivery check)
+- [ ] Concierge → agent delegation logic
 - [ ] Shopping cart state management (multi-item)
 - [ ] Cart sidebar panel (quantities, totals, gift message)
-- [ ] Delivery city autocomplete
-- [ ] Delivery check integration (date, rate display)
+- [ ] Delivery city autocomplete + check integration
 - [ ] Checkout flow → `kapruka_create_order` → pay link
 - [ ] Order tracking UI with `kapruka_track_order`
 
 ### Phase 4: Personality & Language (Days 9-10)
-**Goal:** Agent character and multilingual support
+**Goal:** Agent character that reads situations and has opinions
 
-- [ ] "Kapri" system prompt with personality
-- [ ] Context-aware responses (gifts, budget, urgency)
+- [ ] Refine Concierge system prompt — opinions, empathy, local flavour
+- [ ] Everyday shopping flows (budget filtering, comparisons, restocking)
+- [ ] Gift mode with situation-reading
 - [ ] Tanglish input understanding
 - [ ] Sinhala language mode toggle
 - [ ] Smart suggestions and cross-selling logic
@@ -252,7 +340,6 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 **Goal:** Stand-out features and final polish
 
 - [ ] Voice input integration (Web Speech API)
-- [ ] Gift Occasion Wizard flow
 - [ ] Animated Kapri avatar
 - [ ] Dark/light mode
 - [ ] Loading states, error handling, edge cases
@@ -265,8 +352,10 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 - [ ] Deploy to Vercel
 - [ ] Test on multiple devices (desktop, mobile, tablet)
 - [ ] Test all MCP tool integrations end-to-end
+- [ ] Test everyday shopping + gift flows
+- [ ] Test Sinhala/Tanglish conversations
 - [ ] Final polish and bug fixes
-- [ ] Submit challenge entry
+- [ ] Submit live demo link to Kapruka team
 
 ---
 
@@ -290,6 +379,7 @@ NEXT_PUBLIC_DEFAULT_CURRENCY=LKR
 |-----------------------------------|---------------------------------------------------|
 | MCP rate limits (60 req/min)      | Client-side caching, debounced search, paginate    |
 | LLM costs                        | Use GPT-4o-mini for simple queries, 4o for complex |
+| Multi-agent latency               | Parallel agent calls where possible, streaming     |
 | Image loading performance         | Next.js Image component, lazy loading, blur placeholder |
 | Sinhala font rendering            | Include Noto Sans Sinhala web font                 |
 | Order creation in testing         | Use test mode carefully, verify with small orders  |
@@ -300,10 +390,12 @@ NEXT_PUBLIC_DEFAULT_CURRENCY=LKR
 ## Success Metrics
 
 - **Full marks potential:** 95-100/100 if all features implemented
-- **Key differentiators:** Sinhala support (rare), voice input, gift wizard, animated avatar
+- **Key differentiators:** Multi-agent architecture (rare), Sinhala support (rare), situation-reading personality, everyday-shopper focus
 - **Must-nail:** Experience & polish (30pts) + Visual richness (20pts) = 50% of score
+- **Submission:** Reply to approval email with live public demo URL
 
 ---
 
 *Document created: June 2026*  
+*Last updated: June 2026 — revised per challenge team approval email*  
 *Challenge deadline: 30 June 2026*
