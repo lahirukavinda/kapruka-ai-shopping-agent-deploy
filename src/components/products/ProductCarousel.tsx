@@ -14,15 +14,16 @@ interface ProductCarouselProps {
 const cardContainerVariants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.06 },
   },
 };
 
 const cardItemVariants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 16, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: { type: "spring" as const, damping: 20, stiffness: 300 },
   },
 };
@@ -45,7 +46,7 @@ export default function ProductCarousel({
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const scrollAmount = 280;
+    const scrollAmount = 260;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -58,7 +59,8 @@ export default function ProductCarousel({
   return (
     <div className="w-full">
       {title && (
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 px-1">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1 flex items-center gap-2">
+          <span className="w-4 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full" />
           {title}
         </h3>
       )}
@@ -68,24 +70,27 @@ export default function ProductCarousel({
           <button
             onClick={() => scroll("left")}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 touch-target
-              w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md
-              flex items-center justify-center
-              opacity-0 group-hover:opacity-100 transition-opacity"
+              w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg backdrop-blur-sm
+              flex items-center justify-center text-gray-600 dark:text-gray-300
+              opacity-0 group-hover:opacity-100 transition-all hover:bg-white dark:hover:bg-gray-800
+              border border-gray-200/50 dark:border-gray-600/50"
             aria-label="Scroll left"
           >
-            ←
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
           </button>
         )}
 
         <motion.div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin pb-2"
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin pb-2 px-0.5"
           variants={cardContainerVariants}
           initial="hidden"
           animate="visible"
           onScroll={checkScroll}
           drag="x"
-          dragConstraints={{ left: -((products.length - 1) * 260), right: 0 }}
+          dragConstraints={{ left: -((products.length - 1) * 240), right: 0 }}
           dragElastic={0.1}
         >
           {products.map((product) => (
@@ -100,16 +105,19 @@ export default function ProductCarousel({
         </motion.div>
 
         {/* Right arrow */}
-        {canScrollRight && (
+        {canScrollRight && products.length > 2 && (
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 touch-target
-              w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md
-              flex items-center justify-center
-              opacity-0 group-hover:opacity-100 transition-opacity"
+              w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg backdrop-blur-sm
+              flex items-center justify-center text-gray-600 dark:text-gray-300
+              opacity-0 group-hover:opacity-100 transition-all hover:bg-white dark:hover:bg-gray-800
+              border border-gray-200/50 dark:border-gray-600/50"
             aria-label="Scroll right"
           >
-            →
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
           </button>
         )}
       </div>

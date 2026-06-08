@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useChat, Message } from "ai/react";
+import { motion, AnimatePresence } from "framer-motion";
 import ChatHeader from "./ChatHeader";
 import MessageBubble from "./MessageBubble";
 import ThinkingDots from "./ThinkingDots";
@@ -11,6 +12,7 @@ import OfflineBanner from "./OfflineBanner";
 import ToolResultRenderer from "./ToolResultRenderer";
 import CartPanel from "@/components/cart/CartPanel";
 import ProductDetail from "@/components/products/ProductDetail";
+import KapriAvatar from "./KapriAvatar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { AvatarState, Product } from "@/types";
 
@@ -106,24 +108,82 @@ export default function ChatContainer() {
 
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin"
+        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin chat-bg"
         role="log"
         aria-label="Chat conversation"
         aria-live="polite"
       >
-        {showWelcome && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="text-5xl mb-4">🛍️</div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Ayubowan! 🙏
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-              I&apos;m Kapri, your shopping buddy at Kapruka. I can help you find products,
-              compare options, check delivery, and even place orders. What can I help you with?
-            </p>
-            <QuickActionChips onAction={handleQuickAction} />
-          </div>
-        )}
+        <AnimatePresence>
+          {showWelcome && (
+            <motion.div
+              className="flex flex-col items-center justify-center py-8 md:py-16 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              {/* Hero avatar */}
+              <motion.div
+                className="mb-6 avatar-glow rounded-full"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              >
+                <KapriAvatar state="idle" size={96} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.h2
+                className="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <span className="gradient-text">Ayubowan!</span>{" "}
+                <span className="text-gray-900 dark:text-gray-100">🙏</span>
+              </motion.h2>
+
+              {/* Subtitle */}
+              <motion.p
+                className="text-gray-500 dark:text-gray-400 max-w-md mb-2 text-base leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+              >
+                I&apos;m <strong className="text-gray-700 dark:text-gray-200">Kapri</strong>, your AI shopping buddy at Kapruka.
+              </motion.p>
+              <motion.p
+                className="text-gray-400 dark:text-gray-500 max-w-md mb-8 text-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.45 }}
+              >
+                Search products, compare prices, check delivery, and checkout — all through chat.
+              </motion.p>
+
+              {/* Quick actions */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
+              >
+                <QuickActionChips onAction={handleQuickAction} />
+              </motion.div>
+
+              {/* Powered by badge */}
+              <motion.div
+                className="mt-8 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-600"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <span>Powered by</span>
+                <span className="font-semibold text-gray-500 dark:text-gray-500">Kapruka MCP</span>
+                <span>×</span>
+                <span className="font-semibold text-gray-500 dark:text-gray-500">AI</span>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="max-w-3xl mx-auto">
           {messages.map((msg) => (
@@ -170,11 +230,16 @@ export default function ChatContainer() {
           )}
 
           {error && (
-            <div className="flex justify-center mb-3">
-              <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+            <motion.div
+              className="flex justify-center mb-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm">
+                <span className="text-base">⚠️</span>
                 {error}
               </div>
-            </div>
+            </motion.div>
           )}
 
           <div ref={messagesEndRef} />

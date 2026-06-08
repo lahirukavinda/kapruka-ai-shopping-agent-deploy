@@ -150,11 +150,24 @@ export default function ToolResultRenderer({
   onSelectCategory,
 }: ToolResultRendererProps) {
   if (isLoading) {
+    const label = toolName === "kapruka_list_categories"
+      ? "Loading categories..."
+      : toolName === "kapruka_track_order"
+      ? "Checking order status..."
+      : toolName === "kapruka_list_delivery_cities"
+      ? "Looking up cities..."
+      : "Searching products...";
     return (
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {[1, 2, 3].map((i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
+      <div className="ml-10 my-2">
+        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mb-2">
+          <span className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          {label}
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {[1, 2, 3].map((i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }

@@ -26,27 +26,32 @@ export default function ChatHeader({ avatarState, onCartOpen }: ChatHeaderProps)
   const nextLang = languages[(languages.indexOf(language) + 1) % languages.length];
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+    <header className="glass-header flex items-center justify-between px-4 py-3 z-20 relative">
       <div className="flex items-center gap-3">
-        <KapriAvatar state={avatarState} size={40} />
+        <div className="avatar-glow rounded-full">
+          <KapriAvatar state={avatarState} size={44} />
+        </div>
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
             {process.env.NEXT_PUBLIC_APP_NAME || "Kapri"}
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Your Kapruka Shopping Buddy
-          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Online — ready to help
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {/* Language toggle */}
         <button
           onClick={() => setLanguage(nextLang)}
-          className="touch-target px-2.5 py-1.5 text-xs font-medium rounded-lg
-            border border-gray-300 dark:border-gray-600
+          className="touch-target px-3 py-1.5 text-xs font-semibold rounded-full
+            bg-gray-100 dark:bg-gray-800
             text-gray-600 dark:text-gray-400
-            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
           aria-label={`Switch language to ${nextLang}`}
         >
           {langLabels[language]}
@@ -55,9 +60,9 @@ export default function ChatHeader({ avatarState, onCartOpen }: ChatHeaderProps)
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="touch-target w-9 h-9 flex items-center justify-center rounded-lg
-            border border-gray-300 dark:border-gray-600
-            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="touch-target w-10 h-10 flex items-center justify-center rounded-full
+            bg-gray-100 dark:bg-gray-800
+            hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-lg"
           aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
         >
           {theme === "light" ? "🌙" : "☀️"}
@@ -66,14 +71,14 @@ export default function ChatHeader({ avatarState, onCartOpen }: ChatHeaderProps)
         {/* Cart button */}
         <button
           onClick={onCartOpen}
-          className="touch-target relative w-9 h-9 flex items-center justify-center rounded-lg
-            border border-gray-300 dark:border-gray-600
-            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="touch-target relative w-10 h-10 flex items-center justify-center rounded-full
+            bg-gray-100 dark:bg-gray-800
+            hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-lg"
           aria-label={`Cart with ${totalItems} items`}
         >
           🛒
           {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-900">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
