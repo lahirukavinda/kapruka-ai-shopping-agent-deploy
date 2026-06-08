@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getAllTools, getShopperTools, getLogisticsTools } from "@/lib/agents/tools";
+import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "@/lib/agents/tools";
 
 describe("getAllTools", () => {
   it("returns all 7 tools", () => {
@@ -61,6 +61,23 @@ describe("getLogisticsTools", () => {
     expect(names).not.toContain("kapruka_get_product");
     expect(names).not.toContain("kapruka_list_categories");
     expect(names).not.toContain("kapruka_create_order");
+    expect(names).not.toContain("kapruka_track_order");
+  });
+});
+
+describe("getOrderTools", () => {
+  it("returns only the create order tool", () => {
+    const tools = getOrderTools();
+    const names = Object.keys(tools);
+    expect(names).toHaveLength(1);
+    expect(names).toContain("kapruka_create_order");
+  });
+
+  it("does not include shopping or logistics tools", () => {
+    const tools = getOrderTools();
+    const names = Object.keys(tools);
+    expect(names).not.toContain("kapruka_search_products");
+    expect(names).not.toContain("kapruka_list_delivery_cities");
     expect(names).not.toContain("kapruka_track_order");
   });
 });

@@ -17,6 +17,8 @@ export interface OrderDetails {
   recipientName: string;
   recipientPhone: string;
   recipientAddress: string;
+  deliveryDate: string;
+  senderName: string;
   giftMessage?: string;
 }
 
@@ -37,6 +39,12 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split("T")[0];
+  });
+  const [senderName, setSenderName] = useState("");
   const [giftMessage, setGiftMessage] = useState(state.giftMessage || "");
   const [deliveryInfo, setDeliveryInfo] = useState<{
     available: boolean;
@@ -73,6 +81,8 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
       recipientName,
       recipientPhone,
       recipientAddress,
+      deliveryDate,
+      senderName: senderName || recipientName,
       giftMessage: giftMessage || undefined,
     });
     onClose();
@@ -271,6 +281,37 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 resize-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Delivery Date
+                        </label>
+                        <input
+                          type="date"
+                          value={deliveryDate}
+                          onChange={(e) => setDeliveryDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          required
+                          className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
+                            bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                            focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Sender Name <span className="text-gray-400">(for gift card)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={senderName}
+                          onChange={(e) => setSenderName(e.target.value)}
+                          placeholder="Your name (defaults to recipient)"
+                          className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
+                            bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
                         />
                       </div>
 

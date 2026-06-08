@@ -27,72 +27,68 @@ function estimateTokens(msg: CoreMessage): number {
   return Math.ceil(serialized.length / 4) + 4;
 }
 
-function estimateTotalTokens(messages: CoreMessage[]): number {
-  return messages.reduce((sum, msg) => sum + estimateTokens(msg), 0);
-}
-
 // Be very conservative: 8000 limit, reserve 6000 for system+tools+response,
 // leaving only ~2000 tokens for messages. This accounts for tool defs being
 // larger than initially estimated.
 const MESSAGE_BUDGET = 2000;
 
-// Strip all non-text content from messages to save tokens.
-// Tool invocations (product lists, categories, delivery info) are huge JSON
-// blobs that the model doesn't need to see in history.
-function compactMessage(msg: CoreMessage): CoreMessage {
+// Compact an OLD message (not the last user message) to save tokens.
+function compactOldMessage(msg: CoreMessage): CoreMessage | null {
+  // Drop tool-role messages entirely — they contain huge JSON tool results
+  if (msg.role === "tool") return null;
+
   if (msg.role === "user") {
     const content = typeof msg.content === "string"
       ? msg.content
       : JSON.stringify(msg.content);
-    return { role: "user", content: content.slice(0, 500) };
+    return { role: "user", content: content.slice(0, 200) };
   }
 
   if (msg.role === "assistant") {
     const content = typeof msg.content === "string" ? msg.content : "";
     if (content) {
-      return { role: "assistant", content: content.slice(0, 300) };
+      return { role: "assistant", content: content.slice(0, 200) };
     }
-    return { role: "assistant", content: "(results shown to user)" };
+    // Assistant messages with only tool calls (no text) — skip
+    return null;
   }
 
-  // Tool results, system messages - summarize aggressively
-  return { role: "assistant" as const, content: "(previous context)" };
+  return null;
 }
 
 function trimMessages(messages: CoreMessage[]): CoreMessage[] {
   if (!messages.length) return [];
 
-  // Always compact all messages to remove tool invocations
-  const compacted = messages.map(compactMessage);
+  // The LAST user message must be preserved fully — it contains order details,
+  // product IDs, delivery info etc. that the agent needs.
+  // Find it and keep it intact (up to 1500 chars).
+  const lastIdx = messages.length - 1;
+  const lastMsg = messages[lastIdx];
 
-  // If within budget, return all compacted messages
-  if (estimateTotalTokens(compacted) <= MESSAGE_BUDGET) {
-    return compacted;
-  }
+  // Preserve last user message content fully
+  const preservedLast: CoreMessage = lastMsg.role === "user"
+    ? { role: "user", content: (typeof lastMsg.content === "string" ? lastMsg.content : JSON.stringify(lastMsg.content)).slice(0, 1500) }
+    : compactOldMessage(lastMsg) ?? { role: "user" as const, content: "" };
 
-  // Walk backwards, keeping as many recent messages as fit
-  const result: CoreMessage[] = [];
-  let remaining = MESSAGE_BUDGET;
+  const lastCost = estimateTokens(preservedLast);
+  let remaining = MESSAGE_BUDGET - lastCost;
 
-  for (let i = compacted.length - 1; i >= 0; i--) {
-    const cost = estimateTokens(compacted[i]);
+  // Walk backwards through older messages, compacting and fitting to budget
+  const older: CoreMessage[] = [];
+  for (let i = lastIdx - 1; i >= 0 && remaining > 50; i--) {
+    const compacted = compactOldMessage(messages[i]);
+    if (!compacted) continue;
+    const cost = estimateTokens(compacted);
     if (cost <= remaining) {
-      result.unshift(compacted[i]);
+      older.unshift(compacted);
       remaining -= cost;
-    } else if (result.length === 0) {
-      // Must include at least the last message, truncated
-      const text = typeof compacted[i].content === "string"
-        ? compacted[i].content
-        : JSON.stringify(compacted[i].content);
-      const truncated = (text as string).slice(0, Math.max(remaining * 4, 100));
-      result.unshift({ role: "user", content: truncated });
-      break;
     } else {
       break;
     }
   }
 
-  return result;
+  older.push(preservedLast);
+  return older;
 }
 
 function isRateLimitError(err: unknown): boolean {

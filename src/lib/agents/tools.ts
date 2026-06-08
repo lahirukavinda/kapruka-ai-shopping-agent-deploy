@@ -77,21 +77,35 @@ export const kaprukaCreateOrder = tool({
   description:
     "Create a guest checkout order and get a click-to-pay URL. Price is locked for 60 minutes.",
   parameters: z.object({
-    items: z
+    cart: z
       .array(
         z.object({
-          product_id: z.string(),
-          quantity: z.number().min(1),
-          variant: z.string().optional(),
+          product_id: z.string().describe("Kapruka product ID (e.g. 'cake00ka002034')"),
+          quantity: z.number().min(1).max(99).default(1).describe("Quantity (1-99)"),
+          icing_text: z.string().max(120).optional().describe("Cake icing text (optional)"),
         })
       )
-      .describe("Items to order"),
-    delivery_city: z.string().describe("Delivery city name"),
-    recipient_name: z.string().describe("Recipient name"),
-    recipient_phone: z.string().describe("Recipient phone number"),
-    recipient_address: z.string().describe("Delivery address"),
-    gift_message: z.string().optional().describe("Optional gift message"),
-    currency: z.enum(["LKR", "USD"]).optional().default("LKR"),
+      .min(1)
+      .max(30)
+      .describe("1-30 items to order"),
+    recipient: z.object({
+      name: z.string().min(1).max(80).describe("Recipient name"),
+      phone: z.string().min(7).max(30).describe("Recipient phone — E.164 or local SL format"),
+    }),
+    delivery: z.object({
+      address: z.string().min(3).max(250).describe("Street address"),
+      city: z.string().min(2).max(100).describe("Must be a Kapruka delivery city"),
+      date: z.string().describe("Delivery date YYYY-MM-DD (today or future)"),
+      location_type: z.string().default("house").optional().describe("house/apartment/office/other"),
+      instructions: z.string().max(250).optional().describe("Delivery instructions"),
+    }),
+    sender: z.object({
+      name: z.string().min(1).max(80).describe("Sender name on gift card"),
+      anonymous: z.boolean().default(false).optional().describe("If true, shows 'Anonymous'"),
+    }),
+    gift_message: z.string().max(300).optional().describe("Optional gift card message"),
+    currency: z.enum(["LKR", "USD", "GBP", "AUD", "CAD", "EUR"]).optional().default("LKR"),
+    response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
     return await callMcpTool("kapruka_create_order", { params: args });
@@ -133,5 +147,11 @@ export function getLogisticsTools() {
   return {
     kapruka_list_delivery_cities: kaprukaListDeliveryCities,
     kapruka_check_delivery: kaprukaCheckDelivery,
+  };
+}
+
+export function getOrderTools() {
+  return {
+    kapruka_create_order: kaprukaCreateOrder,
   };
 }

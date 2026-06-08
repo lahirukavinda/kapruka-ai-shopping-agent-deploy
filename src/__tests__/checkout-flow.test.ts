@@ -37,6 +37,8 @@ describe("OrderDetails type contract", () => {
       recipientName: "John Doe",
       recipientPhone: "+94771234567",
       recipientAddress: "123 Main St, Colombo 07",
+      deliveryDate: "2026-06-13",
+      senderName: "John Doe",
       giftMessage: "Happy Birthday!",
     };
     expect(details.deliveryCity).toBe("Colombo");
@@ -52,6 +54,8 @@ describe("OrderDetails type contract", () => {
       recipientName: "Jane Doe",
       recipientPhone: "+94777654321",
       recipientAddress: "456 Temple Road, Kandy",
+      deliveryDate: "2026-06-14",
+      senderName: "Jane Doe",
     };
     expect(details.giftMessage).toBeUndefined();
   });
