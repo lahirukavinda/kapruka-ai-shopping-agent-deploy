@@ -11,38 +11,64 @@ interface MessageBubbleProps {
   avatarState?: AvatarState;
 }
 
+function formatInline(text: string): React.ReactNode[] {
+  // Split by bold, links, and images
+  return text.split(/(\*\*[^*]+\*\*|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g).map((part, j) => {
+    // Bold
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    // Image ![alt](url) — render as link text since images in chat are noisy
+    const imgMatch = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (imgMatch) {
+      return (
+        <a
+          key={j}
+          href={imgMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+        >
+          {imgMatch[1] || "View image"}
+        </a>
+      );
+    }
+    // Link [text](url)
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      return (
+        <a
+          key={j}
+          href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+        >
+          {linkMatch[1]}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 function renderMarkdown(text: string) {
   const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
 
   lines.forEach((line, i) => {
-    let processed: React.ReactNode = line;
-
-    // Bold
-    processed = line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
-      }
-      // Links
-      const linkParts = part.split(/(\[[^\]]+\]\([^)]+\))/g);
-      return linkParts.map((lp, k) => {
-        const linkMatch = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        if (linkMatch) {
-          return (
-            <a
-              key={`${j}-${k}`}
-              href={linkMatch[2]}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
-            >
-              {linkMatch[1]}
-            </a>
-          );
-        }
-        return lp;
-      });
-    });
+    // Headings (### ## #)
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const cls = level === 1
+        ? "text-base font-bold mt-2 mb-1"
+        : level === 2
+          ? "text-sm font-bold mt-2 mb-0.5"
+          : "text-sm font-semibold mt-1.5 mb-0.5 text-amber-600 dark:text-amber-400";
+      elements.push(<div key={i} className={cls}>{formatInline(headingMatch[2])}</div>);
+      return;
+    }
 
     // Numbered list
     const numMatch = line.match(/^(\d+)\.\s+(.+)/);
@@ -52,7 +78,7 @@ function renderMarkdown(text: string) {
           <span className="text-amber-500 dark:text-amber-400 font-semibold text-xs min-w-[18px] text-right mt-0.5">
             {numMatch[1]}.
           </span>
-          <span className="flex-1">{processed}</span>
+          <span className="flex-1">{formatInline(numMatch[2])}</span>
         </div>
       );
       return;
@@ -60,10 +86,11 @@ function renderMarkdown(text: string) {
 
     // Bullet list
     if (line.startsWith("- ") || line.startsWith("• ")) {
+      const content = line.slice(2);
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
           <span className="text-amber-500 dark:text-amber-400 mt-1">•</span>
-          <span className="flex-1">{processed}</span>
+          <span className="flex-1">{formatInline(content)}</span>
         </div>
       );
       return;
@@ -75,7 +102,7 @@ function renderMarkdown(text: string) {
       return;
     }
 
-    elements.push(<div key={i}>{processed}</div>);
+    elements.push(<div key={i}>{formatInline(line)}</div>);
   });
 
   return elements;
