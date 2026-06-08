@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type FormEvent } from "react";
+import { useState, useCallback, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -45,6 +45,18 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
     return d.toISOString().split("T")[0];
   });
   const [senderName, setSenderName] = useState("");
+
+  // Task 3: Load cached sender details
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("aura_sender_details");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.senderName && !senderName) setSenderName(parsed.senderName);
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [giftMessage, setGiftMessage] = useState(state.giftMessage || "");
   const [deliveryInfo, setDeliveryInfo] = useState<{
     available: boolean;
@@ -76,15 +88,26 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
   };
 
   const handlePlaceOrder = () => {
+    const finalSenderName = senderName || recipientName;
     onPlaceOrder({
       deliveryCity,
       recipientName,
       recipientPhone,
       recipientAddress,
       deliveryDate,
-      senderName: senderName || recipientName,
+      senderName: finalSenderName,
       giftMessage: giftMessage || undefined,
     });
+    // Cache sender details for future use
+    try {
+      localStorage.setItem("aura_sender_details", JSON.stringify({
+        senderName: finalSenderName,
+        senderPhone: recipientPhone,
+        lastDeliveryCity: deliveryCity,
+        lastRecipientName: recipientName,
+        lastRecipientPhone: recipientPhone,
+      }));
+    } catch { /* ignore */ }
     onClose();
   };
 
@@ -206,8 +229,8 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                       onClick={() => setStep(2)}
                       disabled={totalItems === 0}
                       className="mt-4 w-full py-3 rounded-xl font-medium text-white
-                        bg-gradient-to-r from-amber-500 to-orange-500
-                        hover:from-amber-600 hover:to-orange-600
+                        bg-gradient-to-r from-aura-gold to-aura-emerald
+                        hover:from-yellow-600 hover:to-emerald-700
                         disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                     >
                       Continue to Delivery
@@ -248,7 +271,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           required
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
                         />
                       </div>
 
@@ -264,7 +287,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           required
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
                         />
                       </div>
 
@@ -280,7 +303,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           rows={2}
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 resize-none"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50 resize-none"
                         />
                       </div>
 
@@ -296,7 +319,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           required
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
                         />
                       </div>
 
@@ -311,7 +334,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           placeholder="Your name (defaults to recipient)"
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
                         />
                       </div>
 
@@ -326,7 +349,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                           placeholder="Happy Birthday! 🎂"
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
                         />
                       </div>
                     </div>
@@ -344,8 +367,8 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                         type="submit"
                         disabled={!isDeliveryFormValid}
                         className="flex-1 py-3 rounded-xl font-medium text-white
-                          bg-gradient-to-r from-amber-500 to-orange-500
-                          hover:from-amber-600 hover:to-orange-600
+                          bg-gradient-to-r from-aura-gold to-aura-emerald
+                          hover:from-yellow-600 hover:to-emerald-700
                           disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                       >
                         Review Order

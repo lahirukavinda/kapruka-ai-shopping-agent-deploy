@@ -35,7 +35,7 @@ export default function ChatInput({
   };
 
   return (
-    <div className="glass-header px-3 py-3 z-10" style={{ borderBottom: "none", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+    <div className="glass-header px-3 py-3 z-10" style={{ borderBottom: "none", borderTop: "1px solid rgba(212,160,23,0.1)" }}>
       <form
         onSubmit={handleSubmit}
         className="max-w-3xl mx-auto flex items-center gap-2"
@@ -47,7 +47,7 @@ export default function ChatInput({
             className={`touch-target w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-all ${
               isListening
                 ? "bg-red-500 text-white shadow-lg shadow-red-500/25"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                : "header-btn text-gray-500 dark:text-gray-400"
             }`}
             aria-label={isListening ? "Stop voice input" : "Start voice input"}
             whileTap={{ scale: 0.9 }}
@@ -69,28 +69,25 @@ export default function ChatInput({
                 handleSubmit(e);
               }
             }}
-            placeholder="Ask Kapri anything..."
+            placeholder="Ask Aura anything..."
             disabled={isLoading}
-            className="chat-input w-full resize-none rounded-2xl border border-gray-200 dark:border-gray-700
-              bg-white dark:bg-gray-800/80
+            className="premium-input chat-input w-full resize-none rounded-2xl border border-gray-200/60 dark:border-gray-700/60
+              bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm
               px-4 py-3 pr-12 text-sm text-gray-900 dark:text-gray-100
               placeholder:text-gray-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400
-              disabled:opacity-60 disabled:cursor-not-allowed
-              transition-all shadow-sm"
+              focus:outline-none
+              disabled:opacity-60 disabled:cursor-not-allowed"
             rows={1}
             aria-label="Type your message"
           />
           <motion.button
             type="submit"
             disabled={!text.trim() || isLoading}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full
-              bg-gradient-to-r from-amber-500 to-orange-500
-              text-white shadow-sm
-              disabled:opacity-30 disabled:cursor-not-allowed
-              transition-all"
+            className="send-btn absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full
+              text-white
+              disabled:cursor-not-allowed"
             aria-label="Send message"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.9 }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

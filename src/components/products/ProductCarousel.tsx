@@ -60,7 +60,7 @@ export default function ProductCarousel({
     <div className="w-full">
       {title && (
         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1 flex items-center gap-2">
-          <span className="w-4 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full" />
+          <span className="w-4 h-0.5 bg-gradient-to-r from-aura-gold to-aura-emerald rounded-full" />
           {title}
         </h3>
       )}

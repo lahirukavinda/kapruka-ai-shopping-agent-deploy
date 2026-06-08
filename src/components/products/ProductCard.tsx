@@ -136,7 +136,7 @@ export default function ProductCard({
             animate={controls}
             disabled={!product.inStock}
             className="touch-target flex-1 py-2 px-3 text-xs font-semibold rounded-xl
-              bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600
+              bg-gradient-to-r from-aura-gold to-aura-emerald hover:from-yellow-600 hover:to-emerald-700
               text-white shadow-sm hover:shadow-md
               disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >

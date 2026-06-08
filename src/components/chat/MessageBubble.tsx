@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import KapriAvatar from "./KapriAvatar";
+import AuraAvatar from "./AuraAvatar";
 import type { AvatarState } from "@/types";
 
 interface MessageBubbleProps {
@@ -27,7 +27,7 @@ function formatInline(text: string): React.ReactNode[] {
           href={imgMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+          className="text-aura-gold dark:text-aura-goldenLight underline decoration-aura-gold/30 hover:decoration-aura-gold transition-colors"
         >
           {imgMatch[1] || "View image"}
         </a>
@@ -42,7 +42,7 @@ function formatInline(text: string): React.ReactNode[] {
           href={linkMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-amber-600 dark:text-amber-400 underline decoration-amber-300/50 hover:decoration-amber-500 transition-colors"
+          className="text-aura-gold dark:text-aura-goldenLight underline decoration-aura-gold/30 hover:decoration-aura-gold transition-colors"
         >
           {linkMatch[1]}
         </a>
@@ -65,7 +65,7 @@ function renderMarkdown(text: string) {
         ? "text-base font-bold mt-2 mb-1"
         : level === 2
           ? "text-sm font-bold mt-2 mb-0.5"
-          : "text-sm font-semibold mt-1.5 mb-0.5 text-amber-600 dark:text-amber-400";
+          : "text-sm font-semibold mt-1.5 mb-0.5 text-aura-gold dark:text-aura-goldenLight";
       elements.push(<div key={i} className={cls}>{formatInline(headingMatch[2])}</div>);
       return;
     }
@@ -75,7 +75,7 @@ function renderMarkdown(text: string) {
     if (numMatch) {
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
-          <span className="text-amber-500 dark:text-amber-400 font-semibold text-xs min-w-[18px] text-right mt-0.5">
+          <span className="text-aura-gold dark:text-aura-goldenLight font-semibold text-xs min-w-[18px] text-right mt-0.5">
             {numMatch[1]}.
           </span>
           <span className="flex-1">{formatInline(numMatch[2])}</span>
@@ -89,7 +89,7 @@ function renderMarkdown(text: string) {
       const content = line.slice(2);
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
-          <span className="text-amber-500 dark:text-amber-400 mt-1">•</span>
+          <span className="text-aura-gold dark:text-aura-goldenLight mt-1">•</span>
           <span className="flex-1">{formatInline(content)}</span>
         </div>
       );
@@ -141,17 +141,17 @@ export default function MessageBubble({
       role="article"
       aria-label={
         isAssistant
-          ? `Kapri says: ${content.slice(0, 100)}`
+          ? `Aura says: ${content.slice(0, 100)}`
           : `You said: ${content.slice(0, 100)}`
       }
       aria-busy={isStreaming}
     >
-      {isAssistant && <KapriAvatar state={avatarState} size={32} />}
+      {isAssistant && <AuraAvatar state={avatarState} size={32} />}
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words ${
           isAssistant
-            ? "bg-white dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-100 dark:border-gray-700/50"
-            : "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md"
+            ? "assistant-bubble text-gray-800 dark:text-gray-100"
+            : "user-bubble text-white shadow-lg"
         }`}
       >
         {isAssistant ? renderMarkdown(content) : content}

@@ -6,6 +6,7 @@ import type { Category } from "@/types";
 interface CategoryTilesProps {
   categories: Category[];
   onSelect?: (category: Category) => void;
+  showMoreMessage?: string;
 }
 
 const categoryIcons: Record<string, string> = {
@@ -50,11 +51,11 @@ function getIcon(name: string): string {
   return categoryIcons[key] || "🏷️";
 }
 
-export default function CategoryTiles({ categories, onSelect }: CategoryTilesProps) {
+export default function CategoryTiles({ categories, onSelect, showMoreMessage }: CategoryTilesProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 px-1 flex items-center gap-2">
-        <span className="w-4 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full" />
+        <span className="w-4 h-0.5 bg-gradient-to-r from-aura-gold to-aura-emerald rounded-full" />
         Found {categories.length} categories
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -71,12 +72,19 @@ export default function CategoryTiles({ categories, onSelect }: CategoryTilesPro
           >
             <div className="flex items-center gap-2">
               <span className="text-lg flex-shrink-0">{getIcon(cat.name)}</span>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-aura-gold dark:group-hover:text-aura-goldenLight transition-colors">
                 {cat.name}
               </span>
             </div>
           </motion.button>
         ))}
+        {showMoreMessage && (
+          <div className="category-tile rounded-xl px-3 py-2.5 flex items-center justify-center">
+            <span className="text-xs font-medium text-aura-gold dark:text-aura-goldenLight text-center">
+              {showMoreMessage}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

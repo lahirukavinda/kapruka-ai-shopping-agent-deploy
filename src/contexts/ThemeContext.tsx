@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const stored = localStorage.getItem("kapri-theme") as Theme | null;
+    const stored = (localStorage.getItem("aura-theme") || localStorage.getItem("kapri-theme")) as Theme | null;
     if (stored) {
       setTheme(stored);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove("dark");
     }
-    localStorage.setItem("kapri-theme", theme);
+    localStorage.setItem("aura-theme", theme);
   }, [theme]);
 
   const toggle = useCallback(() => {

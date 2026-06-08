@@ -175,7 +175,7 @@ export async function POST(req: Request) {
     const code = isRateLimit ? "RATE_LIMITED" : isTokenLimit ? "TOKEN_LIMIT" : "UNKNOWN";
 
     const errorMessages: Record<string, string> = {
-      RATE_LIMITED: "Kapri is getting a lot of requests right now. Please wait a moment and try again.",
+      RATE_LIMITED: "Aura is getting a lot of requests right now. Please wait a moment and try again.",
       TOKEN_LIMIT: "The conversation got too long. Try starting a fresh chat or sending a shorter message.",
       UNKNOWN: "Something went wrong. Please try again.",
     };

@@ -4,13 +4,13 @@ import { motion, type Variants } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { AvatarState } from "@/types";
 
-interface KapriAvatarProps {
+interface AuraAvatarProps {
   state: AvatarState;
   size?: number;
 }
 
 const stateGlow: Record<AvatarState, string> = {
-  idle: "rgba(249,172,27,0.35)",
+  idle: "rgba(212,160,23,0.4)",
   thinking: "rgba(167,139,250,0.5)",
   excited: "rgba(251,146,60,0.5)",
   celebrating: "rgba(52,211,153,0.55)",
@@ -18,7 +18,7 @@ const stateGlow: Record<AvatarState, string> = {
 };
 
 const stateBg: Record<AvatarState, [string, string]> = {
-  idle: ["#f9ac1b", "#f59e0b"],
+  idle: ["#D4A017", "#2D6A4F"],
   thinking: ["#a78bfa", "#8b5cf6"],
   excited: ["#fb923c", "#f97316"],
   celebrating: ["#34d399", "#10b981"],
@@ -40,7 +40,7 @@ const CONFETTI_PARTICLES = [
   { cx: -0.6, cy: -0.1, r: 0.035, color: "#ec4899", delay: 0.14 },
 ];
 
-function KapriSVG({ state, size, reducedMotion }: { state: AvatarState; size: number; reducedMotion: boolean }) {
+function AuraSVG({ state, size, reducedMotion }: { state: AvatarState; size: number; reducedMotion: boolean }) {
   const s = size;
   const cx = s / 2;
   const cy = s / 2;
@@ -60,7 +60,39 @@ function KapriSVG({ state, size, reducedMotion }: { state: AvatarState; size: nu
           <stop offset="0%" stopColor={c1} />
           <stop offset="100%" stopColor={c2} />
         </radialGradient>
+        <radialGradient id={`halo-${s}`} cx="50%" cy="50%">
+          <stop offset="50%" stopColor="#FFD700" stopOpacity="0" />
+          <stop offset="75%" stopColor="#FFD700" stopOpacity="0.2" />
+          <stop offset="85%" stopColor="#D4A017" stopOpacity="0.35" />
+          <stop offset="92%" stopColor="#FFD700" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#FFD700" stopOpacity="0" />
+        </radialGradient>
+        <filter id={`halo-glow-${s}`}>
+          <feGaussianBlur stdDeviation={r * 0.06} result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
+
+      {/* Outer glow ring */}
+      {state === "idle" && (
+        <circle cx={cx} cy={cy} r={r * 1.25} fill="none" stroke="#FFD700" strokeWidth={r * 0.02} strokeOpacity={0.15} filter={`url(#halo-glow-${s})`}>
+          {!reducedMotion && (
+            <animate attributeName="r" values={`${r * 1.22};${r * 1.28};${r * 1.22}`} dur="3s" repeatCount="indefinite" />
+          )}
+        </circle>
+      )}
+
+      {/* Golden halo ring */}
+      {state === "idle" && (
+        <circle cx={cx} cy={cy} r={r * 1.18} fill={`url(#halo-${s})`} stroke="#FFD700" strokeWidth={r * 0.05} strokeOpacity={0.45} filter={`url(#halo-glow-${s})`}>
+          {!reducedMotion && (
+            <animate attributeName="stroke-opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite" />
+          )}
+        </circle>
+      )}
 
       {/* Idle breathing group — subtle Y translate */}
       <g>
@@ -227,7 +259,7 @@ function KapriSVG({ state, size, reducedMotion }: { state: AvatarState; size: nu
   );
 }
 
-export default function KapriAvatar({ state, size = 32 }: KapriAvatarProps) {
+export default function AuraAvatar({ state, size = 32 }: AuraAvatarProps) {
   const reducedMotion = useReducedMotion();
 
   const variants: Variants = reducedMotion
@@ -274,10 +306,10 @@ export default function KapriAvatar({ state, size = 32 }: KapriAvatarProps) {
       }}
       animate={state}
       variants={variants}
-      aria-label={`Kapri is ${state}`}
+      aria-label={`Aura is ${state}`}
       role="img"
     >
-      <KapriSVG state={state} size={size} reducedMotion={reducedMotion} />
+      <AuraSVG state={state} size={size} reducedMotion={reducedMotion} />
     </motion.div>
   );
 }

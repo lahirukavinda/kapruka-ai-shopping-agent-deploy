@@ -54,7 +54,7 @@ export default function CityList({ cities, onSelectCity }: CityListProps) {
           placeholder="Filter cities..."
           className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
             bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100
-            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
         />
       </div>
 
@@ -69,7 +69,7 @@ export default function CityList({ cities, onSelectCity }: CityListProps) {
                 text-gray-700 dark:text-gray-300
                 hover:bg-amber-50 dark:hover:bg-amber-900/30
                 hover:text-amber-700 dark:hover:text-amber-300
-                focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
             >
               {city.name}
             </button>
