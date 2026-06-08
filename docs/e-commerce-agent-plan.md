@@ -1,5 +1,7 @@
 # Kapruka AI Shopping Agent — Project Plan
 
+> See also: [Technical Specification](./e-commerce-agent-tech-spec.md)
+
 ## Overview
 
 Build an AI-powered conversational shopping agent for the **Kapruka Agent Challenge**. The agent connects to the [Kapruka MCP](https://mcp.kapruka.com/mcp) (free, public, no API key) and provides a full-screen, visually rich chat experience that feels **human, surprising, and genuinely helpful** — not a search box wearing a chat costume.
