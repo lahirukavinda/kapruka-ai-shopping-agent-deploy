@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Noto Sans Sinhala";
+  src: url("/fonts/NotoSansSinhala-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0D80-0DFF;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --app-height: 100dvh;
+  --primary: #f9ac1b;
+  --primary-dark: #df5808;
+}
+
+.dark {
+  --background: #1a1a2e;
+  --foreground: #ededed;
+}
+
+html,
+body {
+  height: var(--app-height);
+  overflow: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Inter", "Noto Sans Sinhala", system-ui, sans-serif;
+}
+
+.app-container {
+  height: var(--app-height);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Reduced motion global override (Tech Spec §7.6) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+  }
+}
+
+/* Touch targets — minimum 44×44px (Tech Spec §6.6) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Chat input — prevent iOS auto-zoom (Tech Spec §6.2) */
+.chat-input {
+  font-size: 16px;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Scrollbar styling */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
