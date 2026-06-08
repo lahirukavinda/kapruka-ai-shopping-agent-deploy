@@ -50,8 +50,25 @@ export interface DeliveryCheck {
 export interface OrderResult {
   orderId: string;
   payUrl: string;
+  total: number;
+  currency: "LKR" | "USD";
+  items: { productId: string; name: string; quantity: number; price: number }[];
   expiresAt: string;
   trackingNumber?: string;
+}
+
+export interface DeliveryResult {
+  city: string;
+  available: boolean;
+  deliveryDate: string;
+  rate: number;
+  currency: string;
+  perishableWarning?: string;
+}
+
+export interface City {
+  name: string;
+  aliases?: string[];
 }
 
 export interface OrderTracking {

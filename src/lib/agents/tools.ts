@@ -120,3 +120,18 @@ export function getAllTools() {
     kapruka_track_order: kaprukaTrackOrder,
   };
 }
+
+export function getShopperTools() {
+  return {
+    kapruka_search_products: kaprukaSearchProducts,
+    kapruka_get_product: kaprukaGetProduct,
+    kapruka_list_categories: kaprukaListCategories,
+  };
+}
+
+export function getLogisticsTools() {
+  return {
+    kapruka_list_delivery_cities: kaprukaListDeliveryCities,
+    kapruka_check_delivery: kaprukaCheckDelivery,
+  };
+}
