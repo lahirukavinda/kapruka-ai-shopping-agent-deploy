@@ -5,9 +5,9 @@ import type { AvatarState } from "@/types";
 // relies heavily on SVG animations and framer-motion which don't
 // render well in jsdom.
 
-describe("KapriAvatar configuration", () => {
+describe("AuraAvatar configuration", () => {
   const stateGlow: Record<AvatarState, string> = {
-    idle: "rgba(249,172,27,0.35)",
+    idle: "rgba(212,160,23,0.4)",
     thinking: "rgba(167,139,250,0.5)",
     excited: "rgba(251,146,60,0.5)",
     celebrating: "rgba(52,211,153,0.55)",
@@ -15,7 +15,7 @@ describe("KapriAvatar configuration", () => {
   };
 
   const stateBg: Record<AvatarState, [string, string]> = {
-    idle: ["#f9ac1b", "#f59e0b"],
+    idle: ["#D4A017", "#2D6A4F"],
     thinking: ["#a78bfa", "#8b5cf6"],
     excited: ["#fb923c", "#f97316"],
     celebrating: ["#34d399", "#10b981"],
@@ -51,8 +51,8 @@ describe("KapriAvatar configuration", () => {
     for (const state of Object.keys(stateBg)) {
       const colors = stateBg[state as AvatarState];
       expect(colors).toHaveLength(2);
-      expect(colors[0]).toMatch(/^#[0-9a-f]{6}$/);
-      expect(colors[1]).toMatch(/^#[0-9a-f]{6}$/);
+      expect(colors[0]).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(colors[1]).toMatch(/^#[0-9a-fA-F]{6}$/);
     }
   });
 

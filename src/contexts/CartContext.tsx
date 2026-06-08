@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { CartState, CartAction } from "@/types";
 
-const CART_STORAGE_KEY = "kapri-cart";
+const CART_STORAGE_KEY = "aura-cart";
 
 const initialState: CartState = {
   items: [],

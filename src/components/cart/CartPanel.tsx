@@ -128,7 +128,7 @@ function CartContent({
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {state.items.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            Your cart is empty. Let Kapri help you find something!
+            Your cart is empty. Let Aura help you find something!
           </p>
         ) : (
           state.items.map((item) => (

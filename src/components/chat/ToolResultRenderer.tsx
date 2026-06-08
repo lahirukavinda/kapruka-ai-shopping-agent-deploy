@@ -272,9 +272,13 @@ export default function ToolResultRenderer({
   }
 
   if (toolName === "kapruka_list_categories") {
-    const categories = parseCategories(result);
-    if (categories.length === 0) return null;
-    return <CategoryTiles categories={categories} onSelect={onSelectCategory || (() => {})} />;
+    const allCategories = parseCategories(result);
+    if (allCategories.length === 0) return null;
+    const displayCategories = allCategories.length > 10 ? allCategories.slice(0, 10) : allCategories;
+    const showMoreMessage = allCategories.length > 10
+      ? `...and ${allCategories.length - 10} more! Just ask me 😊`
+      : undefined;
+    return <CategoryTiles categories={displayCategories} onSelect={onSelectCategory || (() => {})} showMoreMessage={showMoreMessage} />;
   }
 
   if (toolName === "kapruka_track_order") {

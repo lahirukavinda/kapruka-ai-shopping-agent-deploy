@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import KapriAvatar from "./KapriAvatar";
+import AuraAvatar from "./AuraAvatar";
 
 export default function ThinkingDots() {
   return (
-    <div className="flex items-start gap-2.5 mb-4" aria-label="Kapri is thinking">
-      <KapriAvatar state="thinking" size={32} />
+    <div className="flex items-start gap-2.5 mb-4" aria-label="Aura is thinking">
+      <AuraAvatar state="thinking" size={32} />
       <div className="bg-white dark:bg-gray-800/90 shadow-sm border border-gray-100 dark:border-gray-700/50 rounded-2xl px-4 py-3 flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <motion.span

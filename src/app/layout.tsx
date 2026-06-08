@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { ChatHistoryProvider } from "@/contexts/ChatHistoryContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,9 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kapri — Your Kapruka Shopping Buddy",
+  title: "Aura (ඕරා) — Your Kapruka Shopping Buddy",
   description:
-    "AI-powered conversational shopping assistant for Kapruka. Browse products, compare options, check delivery, and order — all through natural conversation.",
+    "Aura (ඕරා) — AI-powered conversational shopping companion from the divine Kapruka tree. Browse products, compare options, check delivery, and order — all through natural conversation.",
   keywords: ["Kapruka", "shopping", "AI", "Sri Lanka", "e-commerce"],
 };
 
@@ -39,7 +40,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
-            <CartProvider>{children}</CartProvider>
+            <CartProvider>
+              <ChatHistoryProvider>{children}</ChatHistoryProvider>
+            </CartProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

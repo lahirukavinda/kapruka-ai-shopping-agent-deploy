@@ -17,13 +17,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLang] = useState<Language>("en");
 
   useEffect(() => {
-    const stored = localStorage.getItem("kapri-language") as Language | null;
+    const stored = (localStorage.getItem("aura-language") || localStorage.getItem("kapri-language")) as Language | null;
     if (stored) setLang(stored);
   }, []);
 
   const setLanguage = useCallback((lang: Language) => {
     setLang(lang);
-    localStorage.setItem("kapri-language", lang);
+    localStorage.setItem("aura-language", lang);
   }, []);
 
   return (

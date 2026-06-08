@@ -1,6 +1,6 @@
 "use client";
 
-import KapriAvatar from "./KapriAvatar";
+import AuraAvatar from "./AuraAvatar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
@@ -9,6 +9,7 @@ import type { AvatarState, Language } from "@/types";
 interface ChatHeaderProps {
   avatarState: AvatarState;
   onCartOpen: () => void;
+  onHistoryOpen?: () => void;
 }
 
 const langLabels: Record<Language, string> = {
@@ -17,7 +18,7 @@ const langLabels: Record<Language, string> = {
   tanglish: "TG",
 };
 
-export default function ChatHeader({ avatarState, onCartOpen }: ChatHeaderProps) {
+export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: ChatHeaderProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const { totalItems } = useCart();
@@ -29,22 +30,35 @@ export default function ChatHeader({ avatarState, onCartOpen }: ChatHeaderProps)
     <header className="glass-header flex items-center justify-between px-4 py-3 z-20 relative">
       <div className="flex items-center gap-3">
         <div className="avatar-glow rounded-full">
-          <KapriAvatar state={avatarState} size={44} />
+          <AuraAvatar state={avatarState} size={44} />
         </div>
         <div>
           <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            {process.env.NEXT_PUBLIC_APP_NAME || "Kapri"}
+            {process.env.NEXT_PUBLIC_APP_NAME || "Aura ඕරා"}
           </h1>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Online — ready to help
+              Online — here to help you shine
             </p>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5">
+        {/* Chat history */}
+        {onHistoryOpen && (
+          <button
+            onClick={onHistoryOpen}
+            className="touch-target w-10 h-10 flex items-center justify-center rounded-full
+              bg-gray-100 dark:bg-gray-800
+              hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-lg"
+            aria-label="Chat history"
+          >
+            📋
+          </button>
+        )}
+
         {/* Language toggle */}
         <button
           onClick={() => setLanguage(nextLang)}

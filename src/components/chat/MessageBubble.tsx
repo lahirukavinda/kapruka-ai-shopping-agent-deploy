@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import KapriAvatar from "./KapriAvatar";
+import AuraAvatar from "./AuraAvatar";
 import type { AvatarState } from "@/types";
 
 interface MessageBubbleProps {
@@ -141,17 +141,17 @@ export default function MessageBubble({
       role="article"
       aria-label={
         isAssistant
-          ? `Kapri says: ${content.slice(0, 100)}`
+          ? `Aura says: ${content.slice(0, 100)}`
           : `You said: ${content.slice(0, 100)}`
       }
       aria-busy={isStreaming}
     >
-      {isAssistant && <KapriAvatar state={avatarState} size={32} />}
+      {isAssistant && <AuraAvatar state={avatarState} size={32} />}
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words ${
           isAssistant
-            ? "bg-white dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-100 dark:border-gray-700/50"
-            : "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md"
+            ? "bg-white dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow-sm border border-aura-goldenLight/40 dark:border-gray-700/50"
+            : "bg-gradient-to-br from-aura-gold to-aura-emerald text-white shadow-md"
         }`}
       >
         {isAssistant ? renderMarkdown(content) : content}

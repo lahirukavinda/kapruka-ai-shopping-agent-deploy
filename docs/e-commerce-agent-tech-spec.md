@@ -8,7 +8,7 @@
 ## Table of Contents
 
 1. [Animation Specification](#1-animation-specification)
-2. [Kapri Avatar Design](#2-kapri-avatar-design)
+2. [Aura Avatar Design](#2-aura-avatar-design)
 3. [Recommendation & Cross-Selling Engine](#3-recommendation--cross-selling-engine)
 4. [Product Comparison Component](#4-product-comparison-component)
 5. [Error Handling Matrix](#5-error-handling-matrix)
@@ -202,7 +202,7 @@ Tailwind keyframe (add to `tailwind.config.ts`):
 
 ---
 
-## 2. Kapri Avatar Design
+## 2. Aura Avatar Design
 
 ### 2.1 Format & Library
 
@@ -255,14 +255,14 @@ Tailwind keyframe (add to `tailwind.config.ts`):
 | Context                 | Size    | Positioning                              |
 |-------------------------|---------|------------------------------------------|
 | Inline with agent msgs  | 32×32 px | Left of message bubble, vertically centered |
-| App header              | 64×64 px | Left of "Kapri" title, centered vertically  |
+| App header              | 64×64 px | Left of "Aura" title, centered vertically  |
 
 ### 2.5 Accessibility
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  .kapri-avatar lottie-player,
-  .kapri-avatar .lottie-react {
+  .aura-avatar lottie-player,
+  .aura-avatar .lottie-react {
     animation: none !important;
     /* Show static first frame only */
   }
@@ -332,7 +332,7 @@ Implementation: store as a `Map<string, string[]>` keyed by category keyword. Wh
 ### 3.4 System Prompt Template (Concierge Cross-Sell Instructions)
 
 ```
-You are Kapri, the Kapruka shopping concierge.
+You are Aura, the Kapruka shopping concierge.
 
 When a user searches for a product:
 1. Show the top results first.
@@ -379,7 +379,7 @@ const RecommendationSchema = z.object({
       price: z.number(),
       currency: z.enum(["LKR", "USD"]),
       relatedTo: z.string().describe("Which primary product this complements"),
-      pitch: z.string().describe("One-line suggestion in Kapri's voice"),
+      pitch: z.string().describe("One-line suggestion in Aura's voice"),
     })
   ),
   budgetSummary: z
@@ -480,7 +480,7 @@ const products = await Promise.all(
 
 ## 5. Error Handling Matrix
 
-| Error Type              | Detection                         | User Message (Kapri's Voice)                                                  | Recovery Action                                                                                              |
+| Error Type              | Detection                         | User Message (Aura's Voice)                                                  | Recovery Action                                                                                              |
 |-------------------------|-----------------------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
 | **MCP timeout**         | 5 s request timeout               | "Aiyo, Kapruka servers are being slow. Let me try again..."                   | Retry with exponential backoff: 1 s → 2 s → 4 s, max 3 retries. Show skeleton loader during retry.          |
 | **Empty search results**| 0 results returned                | "Hmm, couldn't find exactly that. How about these?"                           | Broaden search: remove filters, try related/synonym terms, fall back to category browse.                     |
@@ -654,7 +654,7 @@ Apply to: buttons, links, chips, quantity controls, close icons. Use `p-3` (12 p
 ```html
 <div role="log" aria-label="Chat conversation" aria-live="polite">
   <!-- Message bubbles rendered here -->
-  <div role="article" aria-label="Kapri says: ...">...</div>
+  <div role="article" aria-label="Aura says: ...">...</div>
   <div role="article" aria-label="You said: ...">...</div>
 </div>
 ```
@@ -667,14 +667,14 @@ Apply to: buttons, links, chips, quantity controls, close icons. Use `p-3` (12 p
 While the agent is streaming a response:
 
 ```html
-<div role="article" aria-busy="true" aria-label="Kapri is typing...">
+<div role="article" aria-busy="true" aria-label="Aura is typing...">
   {streamedText}
 </div>
 ```
 
 - `aria-busy="true"` tells assistive tech the content is still updating.
 - On stream completion, remove `aria-busy` and set a final `aria-label` with the complete message.
-- Announce completion with a visually hidden live region: `<span className="sr-only" aria-live="assertive">Kapri finished responding.</span>`.
+- Announce completion with a visually hidden live region: `<span className="sr-only" aria-live="assertive">Aura finished responding.</span>`.
 
 ### 7.3 Product Cards
 
@@ -866,7 +866,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 ### 8.4 localStorage Persistence
 
 ```tsx
-const CART_STORAGE_KEY = "kapri-cart";
+const CART_STORAGE_KEY = "aura-cart";
 
 function usePersistedCart() {
   const [state, dispatch] = useReducer(cartReducer, { items: [], deliveryCity: null, giftMessage: null }, () => {

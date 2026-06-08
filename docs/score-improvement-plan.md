@@ -1,4 +1,4 @@
-# Score Improvement Plan: Kapri E-Commerce Agent (78 → 92+)
+# Score Improvement Plan: Aura E-Commerce Agent (78 → 92+)
 
 ## Current Score: 78/100
 
@@ -81,7 +81,7 @@ This improvement is planned for a future iteration.
 
 **Scoring dimension:** Visual Polish & Delight
 
-**Problem:** The `celebrating` state on `KapriAvatar` has a wiggle animation but no confetti or particles. The `idle` state has a floating animation only when shown in the welcome screen via Framer Motion, but the SVG itself has no built-in idle breathing.
+**Problem:** The `celebrating` state on `AuraAvatar` has a wiggle animation but no confetti or particles. The `idle` state has a floating animation only when shown in the welcome screen via Framer Motion, but the SVG itself has no built-in idle breathing.
 
 **Solution:**
 - Add confetti particle animation for `celebrating` state — spawn 10–15 small colored circles with staggered animations that fall and fade out.

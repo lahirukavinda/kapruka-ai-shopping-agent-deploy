@@ -69,13 +69,13 @@ export default function ChatInput({
                 handleSubmit(e);
               }
             }}
-            placeholder="Ask Kapri anything..."
+            placeholder="Ask Aura anything..."
             disabled={isLoading}
             className="chat-input w-full resize-none rounded-2xl border border-gray-200 dark:border-gray-700
               bg-white dark:bg-gray-800/80
               px-4 py-3 pr-12 text-sm text-gray-900 dark:text-gray-100
               placeholder:text-gray-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400
+              focus:outline-none focus:ring-2 focus:ring-aura-gold/50 focus:border-aura-gold
               disabled:opacity-60 disabled:cursor-not-allowed
               transition-all shadow-sm"
             rows={1}
@@ -85,7 +85,7 @@ export default function ChatInput({
             type="submit"
             disabled={!text.trim() || isLoading}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full
-              bg-gradient-to-r from-amber-500 to-orange-500
+              bg-gradient-to-r from-aura-gold to-aura-emerald
               text-white shadow-sm
               disabled:opacity-30 disabled:cursor-not-allowed
               transition-all"

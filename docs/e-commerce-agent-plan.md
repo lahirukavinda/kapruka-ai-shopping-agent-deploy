@@ -35,7 +35,7 @@ Build an AI-powered conversational shopping agent for the **Kapruka Agent Challe
 |-----------------------|--------|-----------------------------------------------------------|
 | Experience & polish   | 30     | Streaming responses, micro-animations, mobile-first, no loading spinners |
 | Visual richness       | 20     | Product carousels, rich cards, animated avatar, dark/light mode |
-| Personality           | 15     | "Kapri" with opinions, empathy, local flavour, Sinhala/Tanglish |
+| Personality           | 15     | "Aura" with opinions, empathy, local flavour, Sinhala/Tanglish |
 | Usefulness            | 15     | Smart recs for everyday shopping + gifting, budget/delivery awareness |
 | End-to-end complete   | 15     | Full flow: search → cart → delivery → checkout → tracking  |
 | Creativity            | 5      | Voice input, multi-agent architecture, situation-reading    |
@@ -180,7 +180,7 @@ The Concierge also handles `kapruka_create_order` and `kapruka_track_order` dire
 ### 1. Chat Interface (Full-Screen)
 - Full-screen immersive layout, no sidebar clutter
 - Message bubbles with typing indicator and streaming text
-- Agent avatar ("Kapri") with subtle animations
+- Agent avatar ("Aura") with subtle animations
 - Input bar at bottom with send button + voice input toggle
 - Quick-action chips: "Browse categories", "Track order", "Gift ideas"
 - Dark/light mode toggle
@@ -205,7 +205,7 @@ The Concierge also handles `kapruka_create_order` and `kapruka_track_order` dire
 - Variants selector (size, color, etc.)
 - Delivery checker (enter city → show date/rate)
 - "Add to Cart" with quantity selector
-- Agent's recommendation note ("Kapri says: Great value for the price!")
+- Agent's recommendation note ("Aura says: Great value for the price!")
 
 ### 5. Cart Panel
 - Slide-out sidebar from right
@@ -228,16 +228,16 @@ The Concierge also handles `kapruka_create_order` and `kapruka_track_order` dire
 
 ---
 
-## Agent Personality: "Kapri"
+## Agent Personality: "Aura"
 
 ### Character
-- **Name:** Kapri
+- **Name:** Aura
 - **Core trait:** Has opinions. Doesn't just list — recommends, reacts, has a point of view.
 - **Tone:** Warm, helpful, slightly playful, knowledgeable about Sri Lankan culture
-- **Greeting:** "Ayubowan! 🙏 I'm Kapri, your shopping buddy at Kapruka. What can I help you find today?"
+- **Greeting:** "Ayubowan! 🙏 I'm Aura, your shopping buddy at Kapruka. What can I help you find today?"
 
 ### Key Behaviours
-- **Reads the situation:** If someone says "I broke up with my girlfriend," Kapri reacts with empathy before jumping to products
+- **Reads the situation:** If someone says "I broke up with my girlfriend," Aura reacts with empathy before jumping to products
 - **Has opinions:** "Honestly? The 128GB model is better value — the 64GB fills up fast with photos"
 - **Proactive:** "Since you're getting groceries, want me to add some essentials you might be running low on?"
 - **Local flavour:** Uses Sri Lankan expressions naturally — "Aiyo!", "machang", cultural references
@@ -286,7 +286,7 @@ The Concierge also handles `kapruka_create_order` and `kapruka_track_order` dire
 ### Wow Factors (Creativity)
 - [ ] Voice input (Web Speech API)
 - [ ] Situation-reading with emotional intelligence (breakup → empathy + action)
-- [ ] Animated "Kapri" avatar that reacts (thinking, excited, celebrating)
+- [ ] Animated "Aura (ඕරා)" avatar that reacts (thinking, excited, celebrating)
 - [ ] Quick-action chips for common flows
 - [ ] Dark/light mode
 
@@ -342,7 +342,7 @@ The Concierge also handles `kapruka_create_order` and `kapruka_track_order` dire
 **Goal:** Stand-out features and final polish
 
 - [ ] Voice input integration (Web Speech API)
-- [ ] Animated Kapri avatar
+- [ ] Animated Aura avatar
 - [ ] Dark/light mode
 - [ ] Loading states, error handling, edge cases
 - [ ] Performance optimization (lazy loading, image optimization)
@@ -369,7 +369,7 @@ OPENAI_API_KEY=<your-openai-key>        # Or ANTHROPIC_API_KEY for Claude
 KAPRUKA_MCP_URL=https://mcp.kapruka.com/mcp
 
 # Optional
-NEXT_PUBLIC_APP_NAME=Kapri
+NEXT_PUBLIC_APP_NAME=Aura
 NEXT_PUBLIC_DEFAULT_CURRENCY=LKR
 ```
 

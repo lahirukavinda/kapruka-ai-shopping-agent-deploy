@@ -25,7 +25,7 @@ async function getClient(): Promise<Client> {
   connectionPromise = (async () => {
     const transport = new StreamableHTTPClientTransport(new URL(MCP_URL));
     const client = new Client({
-      name: "kapri-agent",
+      name: "aura-agent",
       version: "1.0.0",
     });
     await client.connect(transport);
