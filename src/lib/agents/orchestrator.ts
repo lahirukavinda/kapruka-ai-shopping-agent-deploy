@@ -88,5 +88,6 @@ export async function orchestrate({
     messages,
     tools,
     maxSteps: 5,
+    maxTokens: 1024,
   });
 }
