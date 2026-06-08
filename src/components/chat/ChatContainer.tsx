@@ -37,9 +37,15 @@ export default function ChatContainer() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
 
+  const [error, setError] = useState<string | null>(null);
+
   const { messages, isLoading, append } = useChat({
     api: "/api/chat",
     body: { language },
+    onError: (err) => {
+      console.error("Chat error:", err);
+      setError("Oops! Something went wrong. Please try again.");
+    },
   });
 
   const avatarState = getAvatarState(isLoading, messages);
@@ -54,6 +60,7 @@ export default function ChatContainer() {
 
   const handleSendMessage = useCallback(
     (text: string) => {
+      setError(null);
       append({ role: "user", content: text });
     },
     [append]
@@ -159,6 +166,14 @@ export default function ChatContainer() {
           {isLoading && !messages[messages.length - 1]?.content && (
             <div className="flex gap-2 items-center mb-3">
               <ThinkingDots />
+            </div>
+          )}
+
+          {error && (
+            <div className="flex justify-center mb-3">
+              <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+                {error}
+              </div>
             </div>
           )}
 
