@@ -61,17 +61,35 @@ function AuraSVG({ state, size, reducedMotion }: { state: AvatarState; size: num
           <stop offset="100%" stopColor={c2} />
         </radialGradient>
         <radialGradient id={`halo-${s}`} cx="50%" cy="50%">
-          <stop offset="70%" stopColor="#FFD700" stopOpacity="0" />
-          <stop offset="85%" stopColor="#FFD700" stopOpacity="0.25" />
+          <stop offset="50%" stopColor="#FFD700" stopOpacity="0" />
+          <stop offset="75%" stopColor="#FFD700" stopOpacity="0.2" />
+          <stop offset="85%" stopColor="#D4A017" stopOpacity="0.35" />
+          <stop offset="92%" stopColor="#FFD700" stopOpacity="0.15" />
           <stop offset="100%" stopColor="#FFD700" stopOpacity="0" />
         </radialGradient>
+        <filter id={`halo-glow-${s}`}>
+          <feGaussianBlur stdDeviation={r * 0.06} result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
+
+      {/* Outer glow ring */}
+      {state === "idle" && (
+        <circle cx={cx} cy={cy} r={r * 1.25} fill="none" stroke="#FFD700" strokeWidth={r * 0.02} strokeOpacity={0.15} filter={`url(#halo-glow-${s})`}>
+          {!reducedMotion && (
+            <animate attributeName="r" values={`${r * 1.22};${r * 1.28};${r * 1.22}`} dur="3s" repeatCount="indefinite" />
+          )}
+        </circle>
+      )}
 
       {/* Golden halo ring */}
       {state === "idle" && (
-        <circle cx={cx} cy={cy} r={r * 1.18} fill={`url(#halo-${s})`} stroke="#FFD700" strokeWidth={r * 0.04} strokeOpacity={0.35}>
+        <circle cx={cx} cy={cy} r={r * 1.18} fill={`url(#halo-${s})`} stroke="#FFD700" strokeWidth={r * 0.05} strokeOpacity={0.45} filter={`url(#halo-glow-${s})`}>
           {!reducedMotion && (
-            <animate attributeName="stroke-opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="stroke-opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite" />
           )}
         </circle>
       )}

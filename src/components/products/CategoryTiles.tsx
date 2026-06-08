@@ -72,7 +72,7 @@ export default function CategoryTiles({ categories, onSelect, showMoreMessage }:
           >
             <div className="flex items-center gap-2">
               <span className="text-lg flex-shrink-0">{getIcon(cat.name)}</span>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-aura-gold dark:group-hover:text-aura-goldenLight transition-colors">
                 {cat.name}
               </span>
             </div>

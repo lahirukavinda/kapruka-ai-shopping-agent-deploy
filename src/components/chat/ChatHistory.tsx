@@ -45,15 +45,16 @@ export default function ChatHistory({
           />
           <motion.div
             className="fixed right-0 top-0 bottom-0 w-80 max-w-[85vw] z-50
-              bg-white dark:bg-gray-900 shadow-2xl flex flex-col"
+              bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl flex flex-col
+              border-l border-aura-goldenLight/20 dark:border-aura-gold/10"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <div className="flex items-center justify-between p-4 border-b border-aura-goldenLight/20 dark:border-aura-gold/10">
+              <h2 className="text-lg font-bold gradient-text">
                 Chat History
               </h2>
               <button
@@ -73,9 +74,7 @@ export default function ChatHistory({
                   onNewChat();
                   onClose();
                 }}
-                className="flex-1 py-2 rounded-xl text-sm font-medium text-white
-                  bg-gradient-to-r from-aura-gold to-aura-emerald
-                  hover:opacity-90 transition-opacity"
+                className="send-btn flex-1 py-2 rounded-xl text-sm font-medium text-white"
               >
                 + New Chat
               </button>

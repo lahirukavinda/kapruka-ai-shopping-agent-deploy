@@ -218,44 +218,102 @@ export default function ChatContainer() {
         <AnimatePresence>
           {showWelcome && (
             <motion.div
-              className="flex flex-col items-center justify-center py-8 md:py-16 text-center"
+              className="flex flex-col items-center justify-center py-8 md:py-16 text-center relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
               {/* Divine tree background illustration */}
-              <div className="divine-tree-bg absolute inset-0 pointer-events-none opacity-30 dark:opacity-20" />
+              <div className="divine-tree-bg absolute inset-0 pointer-events-none opacity-40 dark:opacity-25" />
 
-              {/* Hero avatar with halo */}
+              {/* Floating golden particles */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[
+                  { left: "20%", top: "60%", size: 6, delay: "0s", dur: "4s" },
+                  { left: "75%", top: "55%", size: 5, delay: "1s", dur: "5s" },
+                  { left: "40%", top: "70%", size: 4, delay: "0.5s", dur: "4.5s" },
+                  { left: "60%", top: "65%", size: 7, delay: "2s", dur: "5.5s" },
+                  { left: "30%", top: "50%", size: 3, delay: "1.5s", dur: "4s" },
+                  { left: "85%", top: "45%", size: 5, delay: "0.8s", dur: "5s" },
+                ].map((p, i) => (
+                  <div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      left: p.left,
+                      top: p.top,
+                      width: p.size,
+                      height: p.size,
+                      background: `radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(212,160,23,0.4) 60%, transparent 100%)`,
+                      animation: `float-particle-${(i % 3) + 1} ${p.dur} ease-in-out ${p.delay} infinite`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Decorative divine tree SVG */}
+              <motion.svg
+                className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none opacity-[0.07] dark:opacity-[0.04]"
+                width="280" height="320" viewBox="0 0 280 320" fill="none"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.3 }}
+              >
+                <ellipse cx="140" cy="120" rx="110" ry="100" fill="url(#treeGrad)" />
+                <ellipse cx="140" cy="90" rx="80" ry="70" fill="url(#treeInner)" />
+                <rect x="132" y="200" width="16" height="100" rx="8" fill="#8B6914" opacity="0.3" />
+                <circle cx="140" cy="80" r="50" fill="url(#haloGrad)" />
+                <defs>
+                  <radialGradient id="treeGrad" cx="50%" cy="40%">
+                    <stop offset="0%" stopColor="#2D6A4F" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#1B4332" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="treeInner" cx="50%" cy="40%">
+                    <stop offset="0%" stopColor="#52B788" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#2D6A4F" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="haloGrad" cx="50%" cy="50%">
+                    <stop offset="0%" stopColor="#FFD700" stopOpacity="0.5" />
+                    <stop offset="50%" stopColor="#D4A017" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#FFD700" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+              </motion.svg>
+
+              {/* Hero avatar with dramatic halo */}
               <motion.div
-                className="mb-6 aura-halo rounded-full relative z-10"
+                className="mb-8 relative z-10"
                 animate={{ y: [0, -8, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
               >
-                <AuraAvatar state="idle" size={96} />
+                <div className="aura-halo rounded-full p-1">
+                  <AuraAvatar state="idle" size={100} />
+                </div>
               </motion.div>
 
-              {/* Title */}
+              {/* Title — animated gradient */}
               <motion.h2
-                className="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight relative z-10"
+                className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight relative z-10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <span className="gradient-text">Ayubowan!</span>{" "}
+                <span className="gradient-text-animated">Ayubowan!</span>{" "}
                 <span className="text-gray-900 dark:text-gray-100">🙏</span>
               </motion.h2>
 
-              {/* Subtitle */}
-              <motion.p
-                className="text-gray-500 dark:text-gray-400 max-w-md mb-2 text-base leading-relaxed relative z-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+              {/* Subtitle in glassmorphism card */}
+              <motion.div
+                className="glass-card rounded-2xl px-6 py-4 max-w-md mb-3 relative z-10"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 }}
               >
-                I&apos;m <strong className="text-aura-gold dark:text-aura-goldenLight">Aura</strong> (ඕරා), your divine shopping companion from the Kapruka tree.
-              </motion.p>
+                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                  I&apos;m <strong className="gradient-text font-bold">Aura</strong> (ඕරා), your divine shopping companion from the Kapruka tree.
+                </p>
+              </motion.div>
               <motion.p
                 className="text-gray-400 dark:text-gray-500 max-w-md mb-8 text-sm relative z-10"
                 initial={{ opacity: 0 }}
@@ -275,17 +333,17 @@ export default function ChatContainer() {
                 <QuickActionChips onAction={handleQuickAction} />
               </motion.div>
 
-              {/* Powered by badge */}
+              {/* Powered by badge — premium style */}
               <motion.div
-                className="mt-8 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-600 relative z-10"
+                className="mt-8 glass-card rounded-full px-5 py-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 relative z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
               >
                 <span>Powered by</span>
-                <span className="font-semibold text-aura-gold dark:text-aura-goldenLight">Kapruka MCP</span>
-                <span>×</span>
-                <span className="font-semibold text-aura-emerald dark:text-aura-leaf">AI</span>
+                <span className="font-bold gradient-text">Kapruka MCP</span>
+                <span className="text-aura-gold">×</span>
+                <span className="font-bold text-aura-emerald dark:text-aura-leaf">AI</span>
               </motion.div>
             </motion.div>
           )}
