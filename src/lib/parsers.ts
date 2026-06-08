@@ -128,7 +128,7 @@ export function parseTracking(data: unknown): OrderTracking | null {
 export function parseOrder(data: unknown): OrderResult | null {
   try {
     const parsed = extractParsed(data) as Record<string, unknown>;
-    if (!parsed?.order_id && !parsed?.orderId) return null;
+    if (!parsed?.order_id && !parsed?.orderId && !parsed?.order_ref && !parsed?.orderRef) return null;
     const items = Array.isArray(parsed.items)
       ? parsed.items.map((it: Record<string, unknown>) => ({
           productId: String(it.product_id || it.productId || ""),
@@ -137,12 +137,28 @@ export function parseOrder(data: unknown): OrderResult | null {
           price: Number(it.price || 0),
         }))
       : [];
+    const summary = parsed.summary as Record<string, unknown> | undefined;
+    const total = summary
+      ? Number(summary.grand_total || 0)
+      : Number(parsed.total || 0);
+    const currency = summary
+      ? String(summary.currency || "LKR")
+      : String(parsed.currency || "LKR");
     return {
-      orderId: String(parsed.order_id || parsed.orderId || ""),
-      payUrl: String(parsed.pay_url || parsed.payUrl || ""),
-      total: Number(parsed.total || 0),
-      currency: (String(parsed.currency || "LKR")) as "LKR" | "USD",
+      orderId: String(parsed.order_id || parsed.orderId || parsed.order_ref || parsed.orderRef || ""),
+      orderRef: parsed.order_ref ? String(parsed.order_ref) : undefined,
+      payUrl: String(parsed.pay_url || parsed.payUrl || parsed.checkout_url || parsed.checkoutUrl || ""),
+      checkoutUrl: parsed.checkout_url ? String(parsed.checkout_url) : undefined,
+      total,
+      currency,
       items,
+      summary: summary ? {
+        items_total: Number(summary.items_total || 0),
+        delivery_fee: Number(summary.delivery_fee || 0),
+        addons_total: Number(summary.addons_total || 0),
+        grand_total: Number(summary.grand_total || 0),
+        currency: String(summary.currency || "LKR"),
+      } : undefined,
       expiresAt: String(parsed.expires_at || parsed.expiresAt || new Date(Date.now() + 3600000).toISOString()),
     };
   } catch {

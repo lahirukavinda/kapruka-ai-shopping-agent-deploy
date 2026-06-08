@@ -1,15 +1,16 @@
 import { streamText } from "ai";
 import type { LanguageModelV1, CoreMessage } from "ai";
-import { getSystemPromptForLanguage, SHOPPER_SYSTEM_PROMPT, LOGISTICS_SYSTEM_PROMPT } from "./concierge";
-import { getAllTools, getShopperTools, getLogisticsTools } from "./tools";
+import { getSystemPromptForLanguage, SHOPPER_SYSTEM_PROMPT, LOGISTICS_SYSTEM_PROMPT, ORDER_SYSTEM_PROMPT } from "./concierge";
+import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "./tools";
 
-type Intent = "shopping" | "logistics" | "general";
+type Intent = "shopping" | "logistics" | "order" | "general";
 
 const INTENT_SYSTEM_PROMPT = `You are an intent classifier for a Sri Lankan e-commerce shopping assistant.
 Given a user message, classify the intent into exactly one of these categories:
 - "shopping": product search, browse, compare, view details, list categories
 - "logistics": delivery cities, delivery check, shipping availability, delivery date/rate
-- "general": order creation, order tracking, greetings, emotional messages, checkout, anything else
+- "order": placing an order, "place my order", checkout with items and delivery details
+- "general": order tracking, greetings, emotional messages, anything else
 
 Respond with ONLY the intent word, nothing else.`;
 
@@ -31,7 +32,7 @@ export async function classifyIntent(
     }
 
     const cleaned = text.trim().toLowerCase();
-    if (cleaned === "shopping" || cleaned === "logistics") {
+    if (cleaned === "shopping" || cleaned === "logistics" || cleaned === "order") {
       return cleaned;
     }
     return "general";
@@ -76,6 +77,10 @@ export async function orchestrate({
       systemPrompt = LOGISTICS_SYSTEM_PROMPT;
       tools = getLogisticsTools() as ReturnType<typeof getAllTools>;
       break;
+    case "order":
+      systemPrompt = ORDER_SYSTEM_PROMPT;
+      tools = getOrderTools() as ReturnType<typeof getAllTools>;
+      break;
     default:
       systemPrompt = getSystemPromptForLanguage(language);
       tools = getAllTools();
@@ -87,7 +92,7 @@ export async function orchestrate({
     system: systemPrompt,
     messages,
     tools,
-    maxSteps: 5,
+    maxSteps: 3,
     maxTokens: 1024,
   });
 }

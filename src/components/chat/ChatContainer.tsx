@@ -52,11 +52,16 @@ export default function ChatContainer() {
     body: { language },
     onError: (err) => {
       console.error("Chat error:", err);
-      const isRateLimit = err.message?.includes("429") ||
-        /rate.?limit|too many requests|wait a moment/i.test(err.message || "");
+      const msg = err.message || "";
+      const isRateLimit = msg.includes("429") ||
+        /rate.?limit|too many requests|busy/i.test(msg);
+      const isTokenLimit = msg.includes("413") ||
+        /too large|token.*limit|too long/i.test(msg);
       if (isRateLimit) {
         setError("Kapri is a bit busy right now. Retrying shortly...");
         setRetryCountdown(5);
+      } else if (isTokenLimit) {
+        setError("Conversation got too long. Try sending a shorter message or start fresh.");
       } else {
         setError("Something went wrong. Tap retry or send your message again.");
       }
@@ -122,17 +127,15 @@ export default function ChatContainer() {
     (details: OrderDetails) => {
       setIsCheckoutOpen(false);
       const itemLines = cartState.items.map(
-        (item) => `- ${item.name} (ID: ${item.productId}, qty: ${item.quantity}, LKR ${item.price})`
+        (item) => `${item.name} (ID: ${item.productId}, qty: ${item.quantity})`
       );
       const msg = [
-        `Place my order with these items:`,
-        ...itemLines,
-        `Delivery to ${details.deliveryCity}`,
-        `Recipient: ${details.recipientName}`,
-        `Phone: ${details.recipientPhone}`,
-        `Address: ${details.recipientAddress}`,
+        `Place my order. Cart: ${itemLines.join("; ")}.`,
+        `Recipient: ${details.recipientName}, Phone: ${details.recipientPhone}.`,
+        `Delivery: ${details.recipientAddress}, ${details.deliveryCity}, Date: ${details.deliveryDate}.`,
+        `Sender: ${details.senderName}.`,
         details.giftMessage ? `Gift message: ${details.giftMessage}` : "",
-      ].filter(Boolean).join("\n");
+      ].filter(Boolean).join(" ");
       handleSendMessage(msg);
     },
     [handleSendMessage, cartState.items]

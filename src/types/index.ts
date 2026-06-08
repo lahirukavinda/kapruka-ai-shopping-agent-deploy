@@ -49,10 +49,19 @@ export interface DeliveryCheck {
 
 export interface OrderResult {
   orderId: string;
+  orderRef?: string;
   payUrl: string;
+  checkoutUrl?: string;
   total: number;
-  currency: "LKR" | "USD";
+  currency: string;
   items: { productId: string; name: string; quantity: number; price: number }[];
+  summary?: {
+    items_total: number;
+    delivery_fee: number;
+    addons_total: number;
+    grand_total: number;
+    currency: string;
+  };
   expiresAt: string;
   trackingNumber?: string;
 }

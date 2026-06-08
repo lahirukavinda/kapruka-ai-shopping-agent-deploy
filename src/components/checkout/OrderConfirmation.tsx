@@ -139,7 +139,7 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
 
       {/* Pay button */}
       <a
-        href={order.payUrl}
+        href={order.checkoutUrl || order.payUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={`mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl

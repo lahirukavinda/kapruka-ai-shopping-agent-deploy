@@ -9,18 +9,20 @@ vi.mock("@/lib/agents/concierge", () => ({
   getSystemPromptForLanguage: vi.fn((lang: string) => `system-prompt-${lang}`),
   SHOPPER_SYSTEM_PROMPT: "shopper-prompt",
   LOGISTICS_SYSTEM_PROMPT: "logistics-prompt",
+  ORDER_SYSTEM_PROMPT: "order-prompt",
 }));
 
 vi.mock("@/lib/agents/tools", () => ({
   getAllTools: vi.fn(() => ({ all: true })),
   getShopperTools: vi.fn(() => ({ shopper: true })),
   getLogisticsTools: vi.fn(() => ({ logistics: true })),
+  getOrderTools: vi.fn(() => ({ order: true })),
 }));
 
 import { classifyIntent, orchestrate } from "@/lib/agents/orchestrator";
 import { streamText } from "ai";
 import type { LanguageModelV1 } from "ai";
-import { getAllTools, getShopperTools, getLogisticsTools } from "@/lib/agents/tools";
+import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "@/lib/agents/tools";
 
 const mockStreamText = vi.mocked(streamText);
 
@@ -80,6 +82,13 @@ describe("classifyIntent", () => {
     expect(result).toBe("general");
   });
 
+  it("returns 'order' when model says order", async () => {
+    mockStreamText.mockReturnValue(makeTextStream("order"));
+    const model = createMockModel();
+    const result = await classifyIntent(model, "Place my order with these items");
+    expect(result).toBe("order");
+  });
+
   it("trims and lowercases the model output", async () => {
     mockStreamText.mockReturnValue(makeTextStream("  Shopping  "));
     const model = createMockModel();
@@ -129,6 +138,24 @@ describe("orchestrate", () => {
     const secondCall = mockStreamText.mock.calls[1][0];
     expect(secondCall.system).toBe("logistics-prompt");
     expect(getLogisticsTools).toHaveBeenCalled();
+  });
+
+  it("routes order intent to order tools", async () => {
+    mockStreamText
+      .mockReturnValueOnce(makeTextStream("order"))
+      .mockReturnValueOnce(makeTextStream("Order placed!"));
+
+    const model = createMockModel();
+    await orchestrate({
+      classifierModel: model,
+      agentModel: model,
+      messages: [{ role: "user", content: "Place my order with cake ID: cake123" }],
+      language: "en",
+    });
+
+    const secondCall = mockStreamText.mock.calls[1][0];
+    expect(secondCall.system).toBe("order-prompt");
+    expect(getOrderTools).toHaveBeenCalled();
   });
 
   it("routes general intent to all tools with language prompt", async () => {
