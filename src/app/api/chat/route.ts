@@ -1,7 +1,5 @@
-import { streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
-import { getSystemPromptForLanguage } from "@/lib/agents/concierge";
-import { getAllTools } from "@/lib/agents/tools";
+import { orchestrate } from "@/lib/agents/orchestrator";
 
 // Support both GitHub Models (free) and OpenAI directly
 const apiKey = process.env.GITHUB_TOKEN || process.env.OPENAI_API_KEY || "";
@@ -32,14 +30,14 @@ export async function POST(req: Request) {
     const { messages, language = "en" } = await req.json();
 
     const model = selectModel(messages);
-    const systemPrompt = getSystemPromptForLanguage(language);
+    const classifierModel = openai("gpt-4o-mini");
+    const agentModel = openai(model);
 
-    const result = await streamText({
-      model: openai(model),
-      system: systemPrompt,
+    const result = await orchestrate({
+      classifierModel,
+      agentModel,
       messages,
-      tools: getAllTools(),
-      maxSteps: 5,
+      language,
     });
 
     return result.toDataStreamResponse();

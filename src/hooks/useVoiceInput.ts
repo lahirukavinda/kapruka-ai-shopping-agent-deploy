@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import type { Language } from "@/types";
 
 interface UseVoiceInputReturn {
   isListening: boolean;
@@ -10,7 +11,13 @@ interface UseVoiceInputReturn {
   stopListening: () => void;
 }
 
-export function useVoiceInput(): UseVoiceInputReturn {
+const LANG_MAP: Record<Language, string> = {
+  en: "en-US",
+  si: "si-LK",
+  tanglish: "en-US",
+};
+
+export function useVoiceInput(lang: Language = "en"): UseVoiceInputReturn {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
@@ -30,7 +37,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = "en-US";
+    recognition.lang = LANG_MAP[lang] || "en-US";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const result = event.results[event.results.length - 1];
@@ -48,7 +55,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-  }, [isSupported]);
+  }, [isSupported, lang]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();

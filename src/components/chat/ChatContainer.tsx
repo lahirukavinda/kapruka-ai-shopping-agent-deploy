@@ -12,6 +12,7 @@ import OfflineBanner from "./OfflineBanner";
 import ToolResultRenderer from "./ToolResultRenderer";
 import CartPanel from "@/components/cart/CartPanel";
 import ProductDetail from "@/components/products/ProductDetail";
+import CheckoutFlow, { type OrderDetails } from "@/components/checkout/CheckoutFlow";
 import KapriAvatar from "./KapriAvatar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { AvatarState, Product } from "@/types";
@@ -38,6 +39,7 @@ export default function ChatContainer() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -77,12 +79,35 @@ export default function ChatContainer() {
 
   const handleCheckout = useCallback(() => {
     setIsCartOpen(false);
-    handleSendMessage("I want to proceed to checkout");
-  }, [handleSendMessage]);
+    setIsCheckoutOpen(true);
+  }, []);
+
+  const handlePlaceOrder = useCallback(
+    (details: OrderDetails) => {
+      setIsCheckoutOpen(false);
+      const msg = [
+        `Place my order:`,
+        `Delivery to ${details.deliveryCity}`,
+        `Recipient: ${details.recipientName}`,
+        `Phone: ${details.recipientPhone}`,
+        `Address: ${details.recipientAddress}`,
+        details.giftMessage ? `Gift message: ${details.giftMessage}` : "",
+      ].filter(Boolean).join("\n");
+      handleSendMessage(msg);
+    },
+    [handleSendMessage]
+  );
 
   const handleCategorySelect = useCallback(
     (category: { name: string }) => {
       handleSendMessage(`Show me products in ${category.name}`);
+    },
+    [handleSendMessage]
+  );
+
+  const handleCitySelect = useCallback(
+    (cityName: string) => {
+      handleSendMessage(`Check delivery to ${cityName}`);
     },
     [handleSendMessage]
   );
@@ -216,6 +241,7 @@ export default function ChatContainer() {
                       result={invocation.result}
                       onViewProduct={setSelectedProduct}
                       onSelectCategory={handleCategorySelect}
+                      onSelectCity={handleCitySelect}
                     />
                   </div>
                 );
@@ -264,6 +290,13 @@ export default function ChatContainer() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         onCheckout={handleCheckout}
+      />
+
+      {/* Checkout flow modal */}
+      <CheckoutFlow
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onPlaceOrder={handlePlaceOrder}
       />
 
       {/* Product detail modal */}

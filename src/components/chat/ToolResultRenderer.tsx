@@ -5,7 +5,10 @@ import ProductCardSkeleton from "@/components/products/ProductCardSkeleton";
 import CategoryTiles from "@/components/products/CategoryTiles";
 import ComparisonView from "@/components/comparison/ComparisonView";
 import OrderTimeline from "@/components/tracking/OrderTimeline";
-import type { Product, Category, OrderTracking } from "@/types";
+import OrderConfirmation from "@/components/checkout/OrderConfirmation";
+import DeliveryInfo from "@/components/delivery/DeliveryInfo";
+import CityList from "@/components/delivery/CityList";
+import type { Product, Category, OrderTracking, OrderResult, DeliveryResult, City } from "@/types";
 
 interface ToolResultRendererProps {
   toolName: string;
@@ -13,6 +16,7 @@ interface ToolResultRendererProps {
   isLoading?: boolean;
   onViewProduct?: (product: Product) => void;
   onSelectCategory?: (category: Category) => void;
+  onSelectCity?: (cityName: string) => void;
 }
 
 function parseProducts(data: unknown): Product[] {
@@ -142,12 +146,85 @@ function parseTracking(data: unknown): OrderTracking | null {
   }
 }
 
+function extractParsed(data: unknown): unknown {
+  const obj = typeof data === "string" ? JSON.parse(data) : data;
+  const content = obj?.content;
+  if (Array.isArray(content) && content.length > 0) {
+    const textItem = content.find((c: { type: string }) => c.type === "text");
+    if (textItem?.text) return JSON.parse(textItem.text);
+  }
+  return obj;
+}
+
+function parseOrder(data: unknown): OrderResult | null {
+  try {
+    const parsed = extractParsed(data) as Record<string, unknown>;
+    if (!parsed?.order_id && !parsed?.orderId) return null;
+    const items = Array.isArray(parsed.items)
+      ? parsed.items.map((it: Record<string, unknown>) => ({
+          productId: String(it.product_id || it.productId || ""),
+          name: String(it.name || ""),
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        }))
+      : [];
+    return {
+      orderId: String(parsed.order_id || parsed.orderId || ""),
+      payUrl: String(parsed.pay_url || parsed.payUrl || ""),
+      total: Number(parsed.total || 0),
+      currency: (String(parsed.currency || "LKR")) as "LKR" | "USD",
+      items,
+      expiresAt: String(parsed.expires_at || parsed.expiresAt || new Date(Date.now() + 3600000).toISOString()),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseDelivery(data: unknown): DeliveryResult | null {
+  try {
+    const parsed = extractParsed(data) as Record<string, unknown>;
+    if (parsed?.available === undefined && parsed?.city === undefined) return null;
+    return {
+      city: String(parsed.city || ""),
+      available: Boolean(parsed.available),
+      deliveryDate: String(parsed.delivery_date || parsed.deliveryDate || parsed.estimated_date || ""),
+      rate: Number(parsed.rate || parsed.delivery_rate || 0),
+      currency: String(parsed.currency || "LKR"),
+      perishableWarning: parsed.perishable_warning
+        ? String(parsed.perishable_warning)
+        : parsed.perishableWarning
+          ? String(parsed.perishableWarning)
+          : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseCities(data: unknown): City[] {
+  try {
+    const parsed = extractParsed(data) as Record<string, unknown>;
+    const cities = parsed?.cities || parsed?.results || parsed;
+    if (Array.isArray(cities)) {
+      return cities.map((c: Record<string, unknown>) => ({
+        name: String(c.name || c.city || ""),
+        aliases: Array.isArray(c.aliases) ? c.aliases.map(String) : undefined,
+      }));
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 export default function ToolResultRenderer({
   toolName,
   result,
   isLoading = false,
   onViewProduct,
   onSelectCategory,
+  onSelectCity,
 }: ToolResultRendererProps) {
   if (isLoading) {
     const label = toolName === "kapruka_list_categories"
@@ -204,6 +281,24 @@ export default function ToolResultRenderer({
     const tracking = parseTracking(result);
     if (!tracking) return null;
     return <OrderTimeline tracking={tracking} />;
+  }
+
+  if (toolName === "kapruka_create_order") {
+    const order = parseOrder(result);
+    if (!order) return null;
+    return <OrderConfirmation order={order} />;
+  }
+
+  if (toolName === "kapruka_check_delivery") {
+    const delivery = parseDelivery(result);
+    if (!delivery) return null;
+    return <DeliveryInfo delivery={delivery} />;
+  }
+
+  if (toolName === "kapruka_list_delivery_cities") {
+    const cities = parseCities(result);
+    if (cities.length === 0) return null;
+    return <CityList cities={cities} onSelectCity={onSelectCity} />;
   }
 
   // For comparison scenarios: if multiple products detected

@@ -25,7 +25,22 @@ const stateBg: Record<AvatarState, [string, string]> = {
   empathetic: ["#f472b6", "#ec4899"],
 };
 
-function KapriSVG({ state, size }: { state: AvatarState; size: number }) {
+const CONFETTI_PARTICLES = [
+  { cx: 0.6, cy: -0.65, r: 0.05, color: "#ef4444", delay: 0 },
+  { cx: -0.55, cy: -0.6, r: 0.04, color: "#3b82f6", delay: 0.1 },
+  { cx: 0.7, cy: -0.3, r: 0.045, color: "#f59e0b", delay: 0.15 },
+  { cx: -0.65, cy: -0.25, r: 0.04, color: "#ec4899", delay: 0.2 },
+  { cx: 0.5, cy: -0.75, r: 0.035, color: "#8b5cf6", delay: 0.05 },
+  { cx: -0.45, cy: -0.7, r: 0.05, color: "#10b981", delay: 0.25 },
+  { cx: 0.75, cy: -0.5, r: 0.03, color: "#f97316", delay: 0.12 },
+  { cx: -0.7, cy: -0.45, r: 0.04, color: "#06b6d4", delay: 0.18 },
+  { cx: 0.55, cy: -0.8, r: 0.035, color: "#ef4444", delay: 0.08 },
+  { cx: -0.5, cy: -0.8, r: 0.04, color: "#3b82f6", delay: 0.22 },
+  { cx: 0.65, cy: -0.15, r: 0.03, color: "#f59e0b", delay: 0.3 },
+  { cx: -0.6, cy: -0.1, r: 0.035, color: "#ec4899", delay: 0.14 },
+];
+
+function KapriSVG({ state, size, reducedMotion }: { state: AvatarState; size: number; reducedMotion: boolean }) {
   const s = size;
   const cx = s / 2;
   const cy = s / 2;
@@ -47,77 +62,90 @@ function KapriSVG({ state, size }: { state: AvatarState; size: number }) {
         </radialGradient>
       </defs>
 
-      {/* Main face circle */}
-      <circle cx={cx} cy={cy} r={r} fill={`url(#bg-${state}-${s})`} />
+      {/* Idle breathing group — subtle Y translate */}
+      <g>
+        {!reducedMotion && state === "idle" && (
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values={`0,0;0,-${s * 0.02};0,0`}
+            dur="1.25s"
+            repeatCount="indefinite"
+          />
+        )}
 
-      {/* Highlight shine */}
-      <ellipse
-        cx={cx - r * 0.2}
-        cy={cy - r * 0.25}
-        rx={r * 0.22}
-        ry={r * 0.15}
-        fill="rgba(255,255,255,0.3)"
-      />
+        {/* Main face circle */}
+        <circle cx={cx} cy={cy} r={r} fill={`url(#bg-${state}-${s})`} />
 
-      {/* Eyes */}
-      {state === "thinking" ? (
-        <>
-          <line x1={cx - eyeSpacing - eyeR} y1={eyeY} x2={cx - eyeSpacing + eyeR} y2={eyeY} stroke="white" strokeWidth={r * 0.06} strokeLinecap="round" />
-          <line x1={cx + eyeSpacing - eyeR} y1={eyeY} x2={cx + eyeSpacing + eyeR} y2={eyeY} stroke="white" strokeWidth={r * 0.06} strokeLinecap="round" />
-        </>
-      ) : state === "celebrating" ? (
-        <>
-          <path d={`M${cx - eyeSpacing - eyeR * 1.2},${eyeY + eyeR * 0.3} Q${cx - eyeSpacing},${eyeY - eyeR * 1.5} ${cx - eyeSpacing + eyeR * 1.2},${eyeY + eyeR * 0.3}`} stroke="white" strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
-          <path d={`M${cx + eyeSpacing - eyeR * 1.2},${eyeY + eyeR * 0.3} Q${cx + eyeSpacing},${eyeY - eyeR * 1.5} ${cx + eyeSpacing + eyeR * 1.2},${eyeY + eyeR * 0.3}`} stroke="white" strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
-        </>
-      ) : (
-        <>
-          <circle cx={cx - eyeSpacing} cy={eyeY} r={eyeR} fill="white" />
-          <circle cx={cx + eyeSpacing} cy={eyeY} r={eyeR} fill="white" />
-          {state === "excited" && (
-            <>
-              <circle cx={cx - eyeSpacing} cy={eyeY} r={eyeR * 1.35} fill="none" stroke="white" strokeWidth={r * 0.03} opacity={0.5} />
-              <circle cx={cx + eyeSpacing} cy={eyeY} r={eyeR * 1.35} fill="none" stroke="white" strokeWidth={r * 0.03} opacity={0.5} />
-            </>
-          )}
-        </>
-      )}
-
-      {/* Mouth */}
-      {state === "empathetic" ? (
-        <path
-          d={`M${cx - r * 0.15},${mouthY + r * 0.05} Q${cx},${mouthY - r * 0.06} ${cx + r * 0.15},${mouthY + r * 0.05}`}
-          stroke="white"
-          strokeWidth={r * 0.06}
-          fill="none"
-          strokeLinecap="round"
+        {/* Highlight shine */}
+        <ellipse
+          cx={cx - r * 0.2}
+          cy={cy - r * 0.25}
+          rx={r * 0.22}
+          ry={r * 0.15}
+          fill="rgba(255,255,255,0.3)"
         />
-      ) : state === "celebrating" || state === "excited" ? (
-        <path
-          d={`M${cx - r * 0.22},${mouthY - r * 0.06} Q${cx},${mouthY + r * 0.22} ${cx + r * 0.22},${mouthY - r * 0.06}`}
-          stroke="white"
-          strokeWidth={r * 0.06}
-          fill="rgba(255,255,255,0.15)"
-          strokeLinecap="round"
-        />
-      ) : (
-        <path
-          d={`M${cx - r * 0.18},${mouthY} Q${cx},${mouthY + r * 0.14} ${cx + r * 0.18},${mouthY}`}
-          stroke="white"
-          strokeWidth={r * 0.06}
-          fill="none"
-          strokeLinecap="round"
-        />
-      )}
 
-      {/* Shopping bag icon on forehead for idle */}
-      {state === "idle" && (
-        <g transform={`translate(${cx - r * 0.13}, ${cy - r * 0.65}) scale(${r * 0.012})`}>
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 6h18" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M16 10a4 4 0 01-8 0" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </g>
-      )}
+        {/* Eyes */}
+        {state === "thinking" ? (
+          <>
+            <line x1={cx - eyeSpacing - eyeR} y1={eyeY} x2={cx - eyeSpacing + eyeR} y2={eyeY} stroke="white" strokeWidth={r * 0.06} strokeLinecap="round" />
+            <line x1={cx + eyeSpacing - eyeR} y1={eyeY} x2={cx + eyeSpacing + eyeR} y2={eyeY} stroke="white" strokeWidth={r * 0.06} strokeLinecap="round" />
+          </>
+        ) : state === "celebrating" ? (
+          <>
+            <path d={`M${cx - eyeSpacing - eyeR * 1.2},${eyeY + eyeR * 0.3} Q${cx - eyeSpacing},${eyeY - eyeR * 1.5} ${cx - eyeSpacing + eyeR * 1.2},${eyeY + eyeR * 0.3}`} stroke="white" strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
+            <path d={`M${cx + eyeSpacing - eyeR * 1.2},${eyeY + eyeR * 0.3} Q${cx + eyeSpacing},${eyeY - eyeR * 1.5} ${cx + eyeSpacing + eyeR * 1.2},${eyeY + eyeR * 0.3}`} stroke="white" strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
+          </>
+        ) : (
+          <>
+            <circle cx={cx - eyeSpacing} cy={eyeY} r={eyeR} fill="white" />
+            <circle cx={cx + eyeSpacing} cy={eyeY} r={eyeR} fill="white" />
+            {state === "excited" && (
+              <>
+                <circle cx={cx - eyeSpacing} cy={eyeY} r={eyeR * 1.35} fill="none" stroke="white" strokeWidth={r * 0.03} opacity={0.5} />
+                <circle cx={cx + eyeSpacing} cy={eyeY} r={eyeR * 1.35} fill="none" stroke="white" strokeWidth={r * 0.03} opacity={0.5} />
+              </>
+            )}
+          </>
+        )}
+
+        {/* Mouth */}
+        {state === "empathetic" ? (
+          <path
+            d={`M${cx - r * 0.15},${mouthY + r * 0.05} Q${cx},${mouthY - r * 0.06} ${cx + r * 0.15},${mouthY + r * 0.05}`}
+            stroke="white"
+            strokeWidth={r * 0.06}
+            fill="none"
+            strokeLinecap="round"
+          />
+        ) : state === "celebrating" || state === "excited" ? (
+          <path
+            d={`M${cx - r * 0.22},${mouthY - r * 0.06} Q${cx},${mouthY + r * 0.22} ${cx + r * 0.22},${mouthY - r * 0.06}`}
+            stroke="white"
+            strokeWidth={r * 0.06}
+            fill="rgba(255,255,255,0.15)"
+            strokeLinecap="round"
+          />
+        ) : (
+          <path
+            d={`M${cx - r * 0.18},${mouthY} Q${cx},${mouthY + r * 0.14} ${cx + r * 0.18},${mouthY}`}
+            stroke="white"
+            strokeWidth={r * 0.06}
+            fill="none"
+            strokeLinecap="round"
+          />
+        )}
+
+        {/* Shopping bag icon on forehead for idle */}
+        {state === "idle" && (
+          <g transform={`translate(${cx - r * 0.13}, ${cy - r * 0.65}) scale(${r * 0.012})`}>
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M3 6h18" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M16 10a4 4 0 01-8 0" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </g>
+        )}
+      </g>
 
       {/* Sparkles for excited/celebrating */}
       {(state === "excited" || state === "celebrating") && (
@@ -131,6 +159,44 @@ function KapriSVG({ state, size }: { state: AvatarState; size: number }) {
           <circle cx={cx + r * 0.4} cy={cy + r * 0.6} r={r * 0.05} fill="white" opacity={0.7}>
             <animate attributeName="opacity" values="0.4;1;0.4" dur="0.9s" repeatCount="indefinite" />
           </circle>
+        </>
+      )}
+
+      {/* Confetti particles for celebrating */}
+      {state === "celebrating" && !reducedMotion && (
+        <>
+          {CONFETTI_PARTICLES.map((p, i) => (
+            <circle
+              key={i}
+              cx={cx + r * p.cx}
+              cy={cy + r * p.cy}
+              r={r * p.r}
+              fill={p.color}
+              opacity={0.9}
+            >
+              <animate
+                attributeName="cy"
+                values={`${cy + r * p.cy};${cy + r * (p.cy + 1.6)}`}
+                dur="2s"
+                begin={`${p.delay}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0.9;0.7;0"
+                dur="2s"
+                begin={`${p.delay}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cx"
+                values={`${cx + r * p.cx};${cx + r * (p.cx + (i % 2 === 0 ? 0.15 : -0.15))}`}
+                dur="2s"
+                begin={`${p.delay}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          ))}
         </>
       )}
 
@@ -211,7 +277,7 @@ export default function KapriAvatar({ state, size = 32 }: KapriAvatarProps) {
       aria-label={`Kapri is ${state}`}
       role="img"
     >
-      <KapriSVG state={state} size={size} />
+      <KapriSVG state={state} size={size} reducedMotion={reducedMotion} />
     </motion.div>
   );
 }
