@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     if (delivery_date) args.delivery_date = delivery_date;
     if (product_id) args.product_id = product_id;
 
-    const result = await callMcpTool("kapruka_check_delivery", args);
+    const result = await callMcpTool("kapruka_check_delivery", { params: args });
 
     // Extract structured delivery info from MCP response
     const mcpResult = result as { content?: Array<{ type: string; text?: string }> };
