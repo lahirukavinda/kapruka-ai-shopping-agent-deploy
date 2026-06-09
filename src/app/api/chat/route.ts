@@ -190,25 +190,28 @@ export async function POST(req: Request) {
 
     const isRateLimit = isRateLimitError(lastError);
     const isTokenLimit = isBodyTooLargeError(lastError);
-    const code = isRateLimit ? "RATE_LIMITED" : isTokenLimit ? "TOKEN_LIMIT" : "UNKNOWN";
 
-    const errorMessages: Record<string, string> = {
-      RATE_LIMITED: "Aura is getting a lot of requests right now. Please wait a moment and try again.",
-      TOKEN_LIMIT: "The conversation got too long. Try starting a fresh chat or sending a shorter message.",
+    const errorMessages = {
+      RATE_LIMITED: "429: Aura is getting a lot of requests right now. Please wait a moment and try again.",
+      TOKEN_LIMIT: "413: The conversation got too long. Try starting a fresh chat or sending a shorter message.",
       UNKNOWN: "Something went wrong. Please try again.",
     };
 
-    return new Response(JSON.stringify({ error: errorMessages[code], code }), {
-      status: isRateLimit ? 429 : 500,
-      headers: { "Content-Type": "application/json" },
+    const code = isRateLimit ? "RATE_LIMITED" : isTokenLimit ? "TOKEN_LIMIT" : "UNKNOWN";
+    const status = isRateLimit ? 429 : isTokenLimit ? 413 : 500;
+
+    // Return plain text — ai/react useChat onError reads the response body as text
+    return new Response(errorMessages[code], {
+      status,
+      headers: { "Content-Type": "text/plain" },
     });
   } catch (error: unknown) {
     console.error("Chat API error:", error);
     const message =
       error instanceof Error ? error.message : "Something went wrong";
-    return new Response(JSON.stringify({ error: message, code: "UNKNOWN" }), {
+    return new Response(message, {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
     });
   }
 }
