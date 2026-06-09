@@ -21,7 +21,7 @@ export const kaprukaSearchProducts = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_search_products", args);
+    return await callMcpTool("kapruka_search_products", { params: args });
   },
 });
 
@@ -33,7 +33,7 @@ export const kaprukaGetProduct = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_get_product", args);
+    return await callMcpTool("kapruka_get_product", { params: args });
   },
 });
 
@@ -44,7 +44,7 @@ export const kaprukaListCategories = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_list_categories", args);
+    return await callMcpTool("kapruka_list_categories", { params: args });
   },
 });
 
@@ -56,7 +56,7 @@ export const kaprukaListDeliveryCities = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_list_delivery_cities", args);
+    return await callMcpTool("kapruka_list_delivery_cities", { params: args });
   },
 });
 
@@ -69,7 +69,7 @@ export const kaprukaCheckDelivery = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_check_delivery", args);
+    return await callMcpTool("kapruka_check_delivery", { params: args });
   },
 });
 
@@ -108,7 +108,7 @@ export const kaprukaCreateOrder = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_create_order", args);
+    return await callMcpTool("kapruka_create_order", { params: args });
   },
 });
 
@@ -119,7 +119,7 @@ export const kaprukaTrackOrder = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_track_order", args);
+    return await callMcpTool("kapruka_track_order", { params: args });
   },
 });
 
