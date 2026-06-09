@@ -136,16 +136,9 @@ export async function POST(req: Request) {
           language,
         });
 
-        // Eagerly consume the first text chunk to catch 413/429 errors
-        // that the API returns before streaming starts.
-        // This forces the underlying HTTP request to complete its initial handshake.
-        const fullStream = result.fullStream;
-        const reader = fullStream.getReader();
-        await reader.read();
-        reader.releaseLock();
-
-        // If we get here without throwing, the stream is valid.
-        // Return the data stream response normally.
+        // Return the data stream response.
+        // The orchestrate call itself will throw on 413/429 errors
+        // during the initial model request before any streaming begins.
         return result.toDataStreamResponse();
       } catch (err) {
         lastError = err;

@@ -66,16 +66,20 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
 
   const handleCityConfirmed = useCallback(async (city: string) => {
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch("/api/check-delivery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: `Check delivery availability to ${city}` }],
-          language: "en",
-        }),
+        body: JSON.stringify({ city }),
       });
       if (res.ok) {
-        setDeliveryInfo({ available: true, date: "2–3 business days", rate: 350 });
+        const data = await res.json();
+        setDeliveryInfo({
+          available: data.available ?? true,
+          date: data.date ?? "2–3 business days",
+          rate: data.rate ?? undefined,
+        });
+      } else {
+        setDeliveryInfo(null);
       }
     } catch {
       setDeliveryInfo(null);
