@@ -2,7 +2,29 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { orchestrate } from "@/lib/agents/orchestrator";
 import type { CoreMessage } from "ai";
 
-// Support both GitHub Models (free) and OpenAI directly
+// ─── Model Configuration Map ────────────────────────────────────────────────
+// Add new models here. Select the active model via AI_MODEL env var.
+// messageBudget: max tokens allocated to conversation history (excluding system prompt & tools)
+// lastMessageLimit: max chars preserved from the latest user message
+interface ModelConfig {
+  messageBudget: number;
+  lastMessageLimit: number;
+}
+
+const MODEL_CONFIGS: Record<string, ModelConfig> = {
+  "gpt-5-mini":  { messageBudget: 8000,  lastMessageLimit: 3000 },
+  "gpt-4o-mini": { messageBudget: 2000,  lastMessageLimit: 1500 },
+  "gpt-4o":      { messageBudget: 16000, lastMessageLimit: 4000 },
+  "gpt-4.1-mini": { messageBudget: 12000, lastMessageLimit: 3000 },
+  "gpt-4.1-nano": { messageBudget: 4000,  lastMessageLimit: 2000 },
+};
+
+// Default to gpt-4o-mini (available on GitHub Models free tier).
+// Switch to gpt-5-mini via AI_MODEL env var once it's available on the API.
+const DEFAULT_MODEL = "gpt-4o-mini";
+const DEFAULT_CONFIG: ModelConfig = { messageBudget: 4000, lastMessageLimit: 2000 };
+
+// ─── Provider Setup ─────────────────────────────────────────────────────────
 const apiKey = process.env.GITHUB_TOKEN || process.env.OPENAI_API_KEY || "";
 const isGitHubModels = !!process.env.GITHUB_TOKEN;
 const baseURL = isGitHubModels
@@ -14,11 +36,13 @@ const openai = createOpenAI({
   baseURL,
 });
 
-// GitHub Models free tier: 8,000 total tokens for ALL models (gpt-4o and gpt-4o-mini).
-// That includes system prompt + tool definitions + messages + response combined.
-// Always use gpt-4o-mini on GitHub Models.
-function selectModel(): string {
-  return isGitHubModels ? "gpt-4o-mini" : "gpt-4o-mini";
+function getModelName(): string {
+  return process.env.AI_MODEL || DEFAULT_MODEL;
+}
+
+function getModelConfig(): ModelConfig {
+  const model = getModelName();
+  return MODEL_CONFIGS[model] || DEFAULT_CONFIG;
 }
 
 // Estimate tokens from the FULL serialized message including tool results.
@@ -26,11 +50,6 @@ function estimateTokens(msg: CoreMessage): number {
   const serialized = JSON.stringify(msg);
   return Math.ceil(serialized.length / 4) + 4;
 }
-
-// Be very conservative: 8000 limit, reserve 6000 for system+tools+response,
-// leaving only ~2000 tokens for messages. This accounts for tool defs being
-// larger than initially estimated.
-const MESSAGE_BUDGET = 2000;
 
 // Compact an OLD message (not the last user message) to save tokens.
 function compactOldMessage(msg: CoreMessage): CoreMessage | null {
@@ -59,19 +78,20 @@ function compactOldMessage(msg: CoreMessage): CoreMessage | null {
 function trimMessages(messages: CoreMessage[]): CoreMessage[] {
   if (!messages.length) return [];
 
+  const config = getModelConfig();
+
   // The LAST user message must be preserved fully — it contains order details,
   // product IDs, delivery info etc. that the agent needs.
-  // Find it and keep it intact (up to 1500 chars).
   const lastIdx = messages.length - 1;
   const lastMsg = messages[lastIdx];
 
-  // Preserve last user message content fully
+  // Preserve last user message content fully (up to model's lastMessageLimit)
   const preservedLast: CoreMessage = lastMsg.role === "user"
-    ? { role: "user", content: (typeof lastMsg.content === "string" ? lastMsg.content : JSON.stringify(lastMsg.content)).slice(0, 1500) }
+    ? { role: "user", content: (typeof lastMsg.content === "string" ? lastMsg.content : JSON.stringify(lastMsg.content)).slice(0, config.lastMessageLimit) }
     : compactOldMessage(lastMsg) ?? { role: "user" as const, content: "" };
 
   const lastCost = estimateTokens(preservedLast);
-  let remaining = MESSAGE_BUDGET - lastCost;
+  let remaining = config.messageBudget - lastCost;
 
   // Walk backwards through older messages, compacting and fitting to budget
   const older: CoreMessage[] = [];
@@ -119,10 +139,10 @@ export async function POST(req: Request) {
   try {
     const { messages: rawMessages, language = "en" } = await req.json();
 
-    const model = selectModel();
+    const model = getModelName();
     let messages = trimMessages(rawMessages);
 
-    const classifierModel = openai("gpt-4o-mini");
+    const classifierModel = openai(model);
     const agentModel = openai(model);
 
     let lastError: unknown = null;
