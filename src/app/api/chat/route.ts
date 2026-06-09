@@ -11,16 +11,21 @@ interface ModelConfig {
   lastMessageLimit: number;
 }
 
+// Budgets reflect actual platform token caps (not the model's native context window).
+// GitHub Models free tier enforces 8K input / 4K output per request for all models.
+// OpenAI direct API has no platform cap — models can use their full context window.
 const MODEL_CONFIGS: Record<string, ModelConfig> = {
-  "gpt-5-mini":  { messageBudget: 8000,  lastMessageLimit: 3000 },
-  "gpt-4o-mini": { messageBudget: 2000,  lastMessageLimit: 1500 },
-  "gpt-4o":      { messageBudget: 16000, lastMessageLimit: 4000 },
-  "gpt-4.1-mini": { messageBudget: 12000, lastMessageLimit: 3000 },
-  "gpt-4.1-nano": { messageBudget: 4000,  lastMessageLimit: 2000 },
+  // ── GitHub Models free tier (8K input cap → ~4K available after overhead) ──
+  "gpt-4o-mini": { messageBudget: 4000,  lastMessageLimit: 2000 }, // 150 req/day
+  "gpt-4o":      { messageBudget: 4000,  lastMessageLimit: 2000 }, // 50 req/day
+  // ── GitHub Models Copilot Pro (4K input cap) ──
+  "gpt-5-mini":  { messageBudget: 2000,  lastMessageLimit: 1500 }, // requires Copilot Pro
+  // ── OpenAI direct API (128K+ context, no platform cap) ──
+  "gpt-4o-mini-direct": { messageBudget: 16000, lastMessageLimit: 4000 },
+  "gpt-4o-direct":      { messageBudget: 32000, lastMessageLimit: 8000 },
 };
 
-// Default to gpt-4o-mini (available on GitHub Models free tier).
-// Switch to gpt-5-mini via AI_MODEL env var once it's available on the API.
+// Default to gpt-4o-mini: same token limits as gpt-4o but 3× more requests/day.
 const DEFAULT_MODEL = "gpt-4o-mini";
 const DEFAULT_CONFIG: ModelConfig = { messageBudget: 4000, lastMessageLimit: 2000 };
 
