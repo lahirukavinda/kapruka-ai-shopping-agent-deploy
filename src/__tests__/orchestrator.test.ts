@@ -82,6 +82,9 @@ describe("classifyIntentByRules", () => {
     expect(classifyIntentByRules("ex cut kala")).toBe("emotional");
     expect(classifyIntentByRules("case broke with my crush")).toBe("emotional");
     expect(classifyIntentByRules("patch up karanawa")).toBe("emotional");
+    expect(classifyIntentByRules("podi aulk machan")).toBe("emotional");
+    expect(classifyIntentByRules("aulak thamai")).toBe("emotional");
+    expect(classifyIntentByRules("gediya wedi")).toBe("emotional");
   });
 
   it("does NOT classify literal phone case as emotional", () => {

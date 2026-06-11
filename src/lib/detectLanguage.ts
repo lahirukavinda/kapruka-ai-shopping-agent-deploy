@@ -28,11 +28,12 @@ const SINHALA_WORDS = new Set([
   "ganan", "vadi", "one", "monawada", "kohe", "kavda",
   "godak", "tikak", "ithin", "eka", "ewa", "mewa", "owa",
   "hariyata", "hondatama", "ikmanin", "pamanak", "witharai",
+  "podi", "loku", "aulk", "aulak", "olk", "gediya", "karadara",
 ]);
 
 // Regex to match any Sinhala word from our vocabulary
 const SINHALA_WORD_PATTERN =
-  /\b(mama|oya|mage|eka|ekak|ganna|kiyanna|danna|hoda|nisa|hari|mokada|kohomada|kiyanawa|balanna|denna|innawa|yanawa|karanawa|wenawa|thamai|nemei|neda|ado|machang|aney|aiyo|karanna|hadanna|oyata|eyata|meka|monawada|kawuda|kavuda|epa|onna|hondai|narkai|puluwanda|bari|gamu|kanna|bonna|yamu|huganawa|araganna|mata|eya|api|umba|mang|magey|oyage|eyage|hodai|narakay|aniwa|saththai|niyamai|patta|supiri|maru|shaa|ela|gindara|machan|ayubowan|subha|dawasak|isthuthi|bohoma|sthuthi|kiyala|kiyanawada|balamu|dannawa|hadamu|karapu|giya|aawa|keruwa|dunna|gatte|dukai|sathutu|kopaya|ahanna|puluwan|gedarata|yawanna|thaggak|vidiyata|wisthara|gaana|kiyada|aduvata|ikmanata|parakkuda|ganan|vadi|one|kohe|kavda|godak|tikak|ithin|ewa|mewa|owa|hariyata|hondatama|ikmanin|pamanak|witharai|sinhalen)\b/gi;
+  /\b(mama|oya|mage|eka|ekak|ganna|kiyanna|danna|hoda|nisa|hari|mokada|kohomada|kiyanawa|balanna|denna|innawa|yanawa|karanawa|wenawa|thamai|nemei|neda|ado|machang|aney|aiyo|karanna|hadanna|oyata|eyata|meka|monawada|kawuda|kavuda|epa|onna|hondai|narkai|puluwanda|bari|gamu|kanna|bonna|yamu|huganawa|araganna|mata|eya|api|umba|mang|magey|oyage|eyage|hodai|narakay|aniwa|saththai|niyamai|patta|supiri|maru|shaa|ela|gindara|machan|ayubowan|subha|dawasak|isthuthi|bohoma|sthuthi|kiyala|kiyanawada|balamu|dannawa|hadamu|karapu|giya|aawa|keruwa|dunna|gatte|dukai|sathutu|kopaya|ahanna|puluwan|gedarata|yawanna|thaggak|vidiyata|wisthara|gaana|kiyada|aduvata|ikmanata|parakkuda|ganan|vadi|one|kohe|kavda|godak|tikak|ithin|ewa|mewa|owa|hariyata|hondatama|ikmanin|pamanak|witharai|sinhalen|podi|loku|aulk|aulak|olk|gediya|karadara)\b/gi;
 
 /**
  * Check if the message is predominantly romanized Sinhala (no English mixing).

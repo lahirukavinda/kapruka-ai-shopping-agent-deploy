@@ -90,9 +90,15 @@ export default function ChatContainer() {
   }, [messages, saveSession]);
 
   // Parse dynamic actions from latest assistant message
+  // Skip if the last message already has tool-rendered category tiles to avoid duplication
   const dynamicActions = useMemo(() => {
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistant?.content) return undefined;
+    // If the message has tool invocations for categories, the UI tiles already show them
+    const hasCategories = lastAssistant.toolInvocations?.some(
+      (inv) => inv.toolName === "kapruka_list_categories"
+    );
+    if (hasCategories) return undefined;
     const parsed = parseResponseActions(lastAssistant.content);
     return parsed.length > 0 ? parsed : undefined;
   }, [messages]);
