@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { generateObject } from "ai";
 import type { LanguageModelV1 } from "ai";
+import { SINGLISH_TO_ENGLISH, ENGLISH_TO_SINHALA } from "@/data/sinhalaWordMap";
 
 // ─── Structured output schema for Sinhala slang parsing ──────────────────────
 // Uses OpenAI structured outputs (via Vercel AI SDK's generateObject) to convert
@@ -61,8 +62,36 @@ RULES:
 4. isProductRequest should be true ONLY for genuine shopping requests`;
 
 /**
+ * Builds dictionary-backed translation context for the words in a message.
+ * Looks up each word in the SinhalaSinglish-DB dictionary and returns
+ * translation hints the LLM can use for accurate interpretation.
+ */
+function buildDictionaryContext(message: string): string {
+  const words = message.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(Boolean);
+  const translations: string[] = [];
+  const seen = new Set<string>();
+
+  for (const word of words) {
+    if (seen.has(word)) continue;
+    seen.add(word);
+
+    const englishMeaning = SINGLISH_TO_ENGLISH[word];
+    if (englishMeaning) {
+      const sinhalaForms = ENGLISH_TO_SINHALA[englishMeaning];
+      const sinhala = sinhalaForms ? ` (${sinhalaForms[0]})` : "";
+      translations.push(`"${word}" = ${englishMeaning}${sinhala}`);
+    }
+  }
+
+  if (translations.length === 0) return "";
+  return `\nDictionary translations for words in this message:\n${translations.join("\n")}`;
+}
+
+/**
  * Normalizes a Sinhala/Singlish/Tanglish message into structured tokens.
  * Only call this for messages detected as non-English (tanglish or si).
+ * Uses a 2700+ word SinhalaSinglish dictionary for word-level translations
+ * as context for the LLM structured output parser.
  * Returns null if parsing fails (caller should proceed without normalization).
  */
 export async function normalizeSlang(
@@ -70,10 +99,11 @@ export async function normalizeSlang(
   userMessage: string
 ): Promise<SinhalaIntentTokens | null> {
   try {
+    const dictContext = buildDictionaryContext(userMessage);
     const result = await generateObject({
       model,
       schema: SinhalaIntentTokensSchema,
-      system: NORMALIZER_SYSTEM_PROMPT,
+      system: NORMALIZER_SYSTEM_PROMPT + dictContext,
       prompt: userMessage,
       maxTokens: 200,
     });
