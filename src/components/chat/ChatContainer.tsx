@@ -90,13 +90,17 @@ export default function ChatContainer() {
   }, [messages, saveSession]);
 
   // Parse dynamic actions from latest assistant message
-  // Skip if the last message already has tool-rendered category tiles to avoid duplication
+  // Skip if any recent message has tool-rendered category tiles to avoid duplication
   const dynamicActions = useMemo(() => {
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistant?.content) return undefined;
-    // If the message has tool invocations for categories, the UI tiles already show them
-    const hasCategories = lastAssistant.toolInvocations?.some(
-      (inv) => inv.toolName === "kapruka_list_categories"
+    // Check if ANY recent assistant message has category tool invocations
+    // (with maxSteps, tool calls and text may be on different messages)
+    const recentMessages = messages.slice(-5);
+    const hasCategories = recentMessages.some(
+      (m) => m.role === "assistant" && m.toolInvocations?.some(
+        (inv) => inv.toolName === "kapruka_list_categories"
+      )
     );
     if (hasCategories) return undefined;
     const parsed = parseResponseActions(lastAssistant.content);
