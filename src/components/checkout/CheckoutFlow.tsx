@@ -234,7 +234,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                       disabled={totalItems === 0}
                       className="mt-4 w-full py-3 rounded-xl font-medium text-white
                         bg-gradient-to-r from-aura-gold to-aura-emerald
-                        hover:from-yellow-600 hover:to-emerald-700
+                        hover:from-yellow-600 hover:to-violet-700
                         disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                     >
                       Continue to Delivery
@@ -372,7 +372,7 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                         disabled={!isDeliveryFormValid}
                         className="flex-1 py-3 rounded-xl font-medium text-white
                           bg-gradient-to-r from-aura-gold to-aura-emerald
-                          hover:from-yellow-600 hover:to-emerald-700
+                          hover:from-yellow-600 hover:to-violet-700
                           disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                       >
                         Review Order
@@ -449,8 +449,8 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                       <button
                         onClick={handlePlaceOrder}
                         className="flex-1 py-3 rounded-xl font-semibold text-white
-                          bg-gradient-to-r from-green-500 to-emerald-600
-                          hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/25 transition-all"
+                          bg-gradient-to-r from-aura-gold to-aura-emerald
+                          hover:from-yellow-600 hover:to-violet-700 shadow-lg shadow-aura-gold/25 transition-all"
                       >
                         Place Order
                       </button>

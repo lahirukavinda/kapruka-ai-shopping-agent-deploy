@@ -18,7 +18,7 @@ const stateGlow: Record<AvatarState, string> = {
 };
 
 const stateBg: Record<AvatarState, [string, string]> = {
-  idle: ["#D4A017", "#2D6A4F"],
+  idle: ["#D4A017", "#402970"],
   thinking: ["#a78bfa", "#8b5cf6"],
   excited: ["#fb923c", "#f97316"],
   celebrating: ["#34d399", "#10b981"],

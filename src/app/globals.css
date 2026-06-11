@@ -15,20 +15,20 @@
   --foreground: #171717;
   --app-height: 100dvh;
   --primary: #D4A017;
-  --primary-dark: #2D6A4F;
-  --gradient-start: #FEFAE0;
-  --gradient-end: #D4E7C5;
+  --primary-dark: #402970;
+  --gradient-start: #FBF8FF;
+  --gradient-end: #EDE5F7;
   --gold: #D4A017;
   --gold-light: #F5E6A3;
-  --emerald: #2D6A4F;
+  --purple: #402970;
   --halo: #FFD700;
 }
 
 .dark {
-  --background: #0D1B0E;
+  --background: #1A0F2E;
   --foreground: #ededed;
-  --gradient-start: #0D1B0E;
-  --gradient-end: #1B4332;
+  --gradient-start: #1A0F2E;
+  --gradient-end: #2A1B4E;
 }
 
 html,
@@ -50,30 +50,30 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* ─── Chat area gradient background — warm golden ambient ─── */
+/* ─── Chat area gradient background — smooth ambient ─── */
 .chat-bg {
   background:
     radial-gradient(ellipse 80% 40% at 50% 95%, rgba(212,160,23,0.04) 0%, transparent 70%),
-    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 50%);
+    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 100%);
 }
 
 .dark .chat-bg {
   background:
     radial-gradient(ellipse 80% 40% at 50% 95%, rgba(255,215,0,0.02) 0%, transparent 70%),
-    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 50%);
+    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 100%);
 }
 
 /* ─── Premium glass-morphism header ─── */
 .glass-header {
   backdrop-filter: blur(16px) saturate(1.8);
   -webkit-backdrop-filter: blur(16px) saturate(1.8);
-  background: linear-gradient(135deg, rgba(254,250,224,0.92) 0%, rgba(255,255,255,0.88) 100%);
+  background: linear-gradient(135deg, rgba(251,248,255,0.92) 0%, rgba(255,255,255,0.88) 100%);
   border-bottom: 1px solid rgba(212,160,23,0.12);
   box-shadow: 0 1px 3px rgba(212,160,23,0.06), 0 4px 16px rgba(0,0,0,0.03);
 }
 
 .dark .glass-header {
-  background: linear-gradient(135deg, rgba(13,27,14,0.92) 0%, rgba(27,67,50,0.85) 100%);
+  background: linear-gradient(135deg, rgba(26,15,46,0.92) 0%, rgba(42,27,78,0.85) 100%);
   border-bottom: 1px solid rgba(255,215,0,0.08);
   box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
 }
@@ -223,12 +223,12 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(212,160,23,0.2), rgba(45,106,79,0.15));
+  background: linear-gradient(180deg, rgba(212,160,23,0.2), rgba(64,41,112,0.15));
   border-radius: 2px;
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(255,215,0,0.15), rgba(82,183,136,0.1));
+  background: linear-gradient(180deg, rgba(255,215,0,0.15), rgba(107,79,160,0.1));
 }
 
 /* ─── Gradient text utility — richer multi-stop ─── */
@@ -238,8 +238,8 @@ body {
     #B8860B 0%,
     #D4A017 20%,
     #FFD700 45%,
-    #52B788 70%,
-    #2D6A4F 100%
+    #6B4FA0 70%,
+    #402970 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -255,7 +255,7 @@ body {
 .gradient-text-animated {
   background: linear-gradient(
     135deg,
-    #B8860B, #D4A017, #FFD700, #52B788, #2D6A4F, #FFD700, #D4A017, #B8860B
+    #B8860B, #D4A017, #FFD700, #6B4FA0, #402970, #FFD700, #D4A017, #B8860B
   );
   background-size: 300% 300%;
   -webkit-background-clip: text;
@@ -319,22 +319,22 @@ body {
 .divine-tree-bg {
   background:
     radial-gradient(ellipse 50% 70% at 50% 35%, rgba(255,215,0,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 55% at 50% 50%, rgba(45,106,79,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 55% at 50% 50%, rgba(64,41,112,0.08) 0%, transparent 55%),
     radial-gradient(circle at 50% 25%, rgba(255,215,0,0.12) 0%, transparent 35%),
-    radial-gradient(circle at 30% 60%, rgba(82,183,136,0.06) 0%, transparent 40%),
-    radial-gradient(circle at 70% 60%, rgba(82,183,136,0.06) 0%, transparent 40%);
+    radial-gradient(circle at 30% 60%, rgba(107,79,160,0.05) 0%, transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(107,79,160,0.05) 0%, transparent 40%);
 }
 
 .dark .divine-tree-bg {
   background:
     radial-gradient(ellipse 50% 70% at 50% 35%, rgba(255,215,0,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 55% at 50% 50%, rgba(45,106,79,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 55% at 50% 50%, rgba(64,41,112,0.06) 0%, transparent 55%),
     radial-gradient(circle at 50% 25%, rgba(255,215,0,0.06) 0%, transparent 35%);
 }
 
 /* ─── Category tile — premium glassmorphism ─── */
 .category-tile {
-  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(254,250,224,0.5) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(251,248,255,0.5) 100%);
   border: 1px solid rgba(212,160,23,0.18);
   backdrop-filter: blur(8px);
   transition: all 0.3s cubic-bezier(.4,0,.2,1);
@@ -342,7 +342,7 @@ body {
 }
 
 .category-tile:hover {
-  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(254,250,224,0.7) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(251,248,255,0.7) 100%);
   border-color: rgba(212,160,23,0.35);
   transform: translateY(-2px) scale(1.02);
   box-shadow:
@@ -351,13 +351,13 @@ body {
 }
 
 .dark .category-tile {
-  background: linear-gradient(135deg, rgba(27,67,50,0.4) 0%, rgba(13,27,14,0.6) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.4) 0%, rgba(26,15,46,0.6) 100%);
   border-color: rgba(255,215,0,0.1);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .dark .category-tile:hover {
-  background: linear-gradient(135deg, rgba(27,67,50,0.6) 0%, rgba(13,27,14,0.8) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.6) 0%, rgba(26,15,46,0.8) 100%);
   border-color: rgba(255,215,0,0.25);
   box-shadow:
     0 4px 12px rgba(255,215,0,0.06),
@@ -366,7 +366,7 @@ body {
 
 /* ─── Premium glass card ─── */
 .glass-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(254,250,224,0.4) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(251,248,255,0.4) 100%);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
   border: 1px solid rgba(212,160,23,0.15);
@@ -376,7 +376,7 @@ body {
 }
 
 .dark .glass-card {
-  background: linear-gradient(135deg, rgba(27,67,50,0.3) 0%, rgba(13,27,14,0.5) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.3) 0%, rgba(26,15,46,0.5) 100%);
   border-color: rgba(255,215,0,0.08);
   box-shadow:
     0 4px 16px rgba(0,0,0,0.2),
@@ -385,7 +385,7 @@ body {
 
 /* ─── Premium chip style ─── */
 .premium-chip {
-  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(254,250,224,0.6) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(251,248,255,0.6) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(212,160,23,0.2);
@@ -405,7 +405,7 @@ body {
 }
 
 .dark .premium-chip {
-  background: linear-gradient(135deg, rgba(27,67,50,0.4) 0%, rgba(13,27,14,0.6) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.4) 0%, rgba(26,15,46,0.6) 100%);
   border-color: rgba(255,215,0,0.12);
   box-shadow:
     0 2px 8px rgba(0,0,0,0.2),
@@ -422,7 +422,7 @@ body {
 
 /* ─── User message bubble premium ─── */
 .user-bubble {
-  background: linear-gradient(135deg, #D4A017 0%, #B8860B 30%, #2D6A4F 100%);
+  background: linear-gradient(135deg, #D4A017 0%, #B8860B 30%, #402970 100%);
   position: relative;
   overflow: hidden;
 }
@@ -447,15 +447,15 @@ body {
 
 /* ─── Assistant bubble premium ─── */
 .assistant-bubble {
-  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(254,250,224,0.6) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(251,248,255,0.6) 100%);
   border: 1px solid rgba(212,160,23,0.15);
   border-left: 3px solid;
-  border-image: linear-gradient(180deg, #D4A017, #2D6A4F) 1;
+  border-image: linear-gradient(180deg, #D4A017, #402970) 1;
   box-shadow: 0 2px 12px rgba(212,160,23,0.06);
 }
 
 .dark .assistant-bubble {
-  background: linear-gradient(135deg, rgba(27,67,50,0.3) 0%, rgba(13,27,14,0.6) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.3) 0%, rgba(26,15,46,0.6) 100%);
   border-color: rgba(255,215,0,0.08);
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
@@ -484,7 +484,7 @@ body {
 
 /* ─── Send button premium ─── */
 .send-btn {
-  background: linear-gradient(135deg, #D4A017 0%, #B8860B 40%, #2D6A4F 100%);
+  background: linear-gradient(135deg, #D4A017 0%, #B8860B 40%, #402970 100%);
   box-shadow: 0 2px 8px rgba(212,160,23,0.3);
   transition: all 0.3s cubic-bezier(.4,0,.2,1);
 }
@@ -503,24 +503,24 @@ body {
 
 /* ─── Header button premium ─── */
 .header-btn {
-  background: linear-gradient(135deg, rgba(254,250,224,0.6) 0%, rgba(255,255,255,0.4) 100%);
+  background: linear-gradient(135deg, rgba(251,248,255,0.6) 0%, rgba(255,255,255,0.4) 100%);
   border: 1px solid rgba(212,160,23,0.12);
   transition: all 0.25s cubic-bezier(.4,0,.2,1);
 }
 
 .header-btn:hover {
-  background: linear-gradient(135deg, rgba(254,250,224,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  background: linear-gradient(135deg, rgba(251,248,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
   border-color: rgba(212,160,23,0.25);
   box-shadow: 0 2px 8px rgba(212,160,23,0.1);
 }
 
 .dark .header-btn {
-  background: linear-gradient(135deg, rgba(27,67,50,0.4) 0%, rgba(13,27,14,0.6) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.4) 0%, rgba(26,15,46,0.6) 100%);
   border-color: rgba(255,215,0,0.08);
 }
 
 .dark .header-btn:hover {
-  background: linear-gradient(135deg, rgba(27,67,50,0.6) 0%, rgba(13,27,14,0.8) 100%);
+  background: linear-gradient(135deg, rgba(42,27,78,0.6) 0%, rgba(26,15,46,0.8) 100%);
   border-color: rgba(255,215,0,0.2);
   box-shadow: 0 2px 8px rgba(255,215,0,0.05);
 }
