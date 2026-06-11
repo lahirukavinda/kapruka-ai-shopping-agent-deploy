@@ -16,7 +16,7 @@ import CheckoutFlow, { type OrderDetails } from "@/components/checkout/CheckoutF
 import ChatHistory from "./ChatHistory";
 import AuraAvatar from "./AuraAvatar";
 import GoldenTreeBackground from "./GoldenTreeBackground";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { detectLanguage } from "@/lib/detectLanguage";
 import { useCart } from "@/contexts/CartContext";
 import { useChatHistory, type ChatSession } from "@/contexts/ChatHistoryContext";
 import { parseResponseActions } from "@/lib/parseResponseActions";
@@ -37,7 +37,7 @@ function getAvatarState(isLoading: boolean, messages: Message[]): AvatarState {
 }
 
 export default function ChatContainer() {
-  const { language } = useLanguage();
+
   const { state: cartState, dispatch: cartDispatch } = useCart();
   const { saveSession } = useChatHistory();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -53,9 +53,11 @@ export default function ChatContainer() {
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
+  const [detectedLanguage, setDetectedLanguage] = useState("en");
+
   const { messages, isLoading, append } = useChat({
     api: "/api/chat",
-    body: { language },
+    body: { language: detectedLanguage },
     onError: (err) => {
       console.error("Chat error:", err);
       const msg = err.message || "";
@@ -115,6 +117,7 @@ export default function ChatContainer() {
       setError(null);
       setLastFailedMessage(text);
       setRetryCountdown(0);
+      setDetectedLanguage(detectLanguage(text));
       append({ role: "user", content: text });
     },
     [append]
@@ -327,12 +330,53 @@ export default function ChatContainer() {
                 Search products, compare prices, check delivery, and checkout — all through chat.
               </motion.p>
 
+              {/* Addressing preference selector */}
+              <motion.div
+                className="relative z-10 mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">
+                  How would you like me to address you?
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    { label: "Sir", icon: "🧑", value: "Call me Sir" },
+                    { label: "Madam", icon: "👩", value: "Call me Madam" },
+                    { label: "Bro", icon: "😎", value: "Call me Bro" },
+                    { label: "Machan", icon: "🤙", value: "Call me Machan" },
+                    { label: "Sis", icon: "👧", value: "Call me Sis" },
+                    { label: "Just my name", icon: "✨", value: "Call me by my name" },
+                  ].map((option, index) => (
+                    <motion.button
+                      key={option.label}
+                      className="premium-chip touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-medium
+                        text-gray-700 dark:text-gray-300
+                        border border-aura-gold/30 hover:border-aura-gold/60
+                        bg-gradient-to-br from-aura-gold/5 to-aura-emerald/5
+                        hover:from-aura-gold/15 hover:to-aura-emerald/15
+                        transition-all duration-200"
+                      onClick={() => handleQuickAction(option.value)}
+                      initial={{ opacity: 0, scale: 0.9, y: 6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 0.5 + index * 0.06, type: "spring", damping: 20, stiffness: 300 }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      <span>{option.icon}</span>
+                      <span>{option.label}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+
               {/* Quick actions */}
               <motion.div
                 className="relative z-10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55 }}
+                transition={{ delay: 0.75 }}
               >
                 <QuickActionChips onAction={handleQuickAction} />
               </motion.div>

@@ -1,9 +1,9 @@
 import { streamText } from "ai";
 import type { LanguageModelV1, CoreMessage } from "ai";
-import { getSystemPromptForLanguage, getShopperPromptForLanguage, getLogisticsPromptForLanguage, getOrderPromptForLanguage } from "./concierge";
+import { getSystemPromptForLanguage, SHOPPER_ADDENDUM, LOGISTICS_ADDENDUM, ORDER_ADDENDUM, EMOTIONAL_SUPPORT_ADDENDUM } from "./concierge";
 import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "./tools";
 
-type Intent = "shopping" | "logistics" | "order" | "general";
+type Intent = "shopping" | "logistics" | "order" | "emotional" | "general";
 
 // Rule-based intent patterns to avoid an LLM call for common queries
 const SHOPPING_PATTERNS =
@@ -12,6 +12,8 @@ const LOGISTICS_PATTERNS =
   /\b(deliver(y|ies)?|shipping|ship to|cities|city list|available.*(deliver|ship)|deliver.*(date|time|rate|cost|charge)|can you deliver|where.*(deliver|ship))\b/i;
 const ORDER_PATTERNS =
   /\b(place.*(my|the)?\s*order|checkout|confirm.*order|complete.*purchase|cart.*order)\b/i;
+const EMOTIONAL_PATTERNS =
+  /\b(sad|happy|angry|stressed|broke up|breakup|break up|miss you|missing|lonely|loneliness|depressed|anxious|worried|scared|excited|celebration|celebrating|engaged|married|divorced|lost someone|passed away|grief|grieving|heartbroken|love|hate|frustrated|overwhelmed|burned out|burnout|promoted|promotion|grateful|thankful|nervous|hurt|crying|tears|died|death|funeral|wedding|anniversary|pregnant|baby born|got fired|laid off|failed|success|achievement|graduated|graduation|retire|retired)\b/i;
 
 /**
  * Fast rule-based intent detection. Returns null when uncertain so we can
@@ -24,6 +26,8 @@ export function classifyIntentByRules(message: string): Intent | null {
   // Order patterns are very specific, check first
   if (ORDER_PATTERNS.test(trimmed)) return "order";
   if (LOGISTICS_PATTERNS.test(trimmed)) return "logistics";
+  // Emotional patterns before shopping — empathy first
+  if (EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SHOPPING_PATTERNS.test(trimmed)) return "shopping";
 
   return null; // uncertain -> fall back to LLM
@@ -34,7 +38,8 @@ Given a user message, classify the intent into exactly one of these categories:
 - "shopping": product search, browse, compare, view details, list categories
 - "logistics": delivery cities, delivery check, shipping availability, delivery date/rate
 - "order": placing an order, "place my order", checkout with items and delivery details
-- "general": order tracking, greetings, emotional messages, anything else
+- "emotional": messages expressing emotions (sadness, joy, stress, loneliness, celebrations, grief, heartbreak, excitement, etc.)
+- "general": order tracking, greetings, addressing preferences, anything else
 
 Respond with ONLY the intent word, nothing else.`;
 
@@ -60,7 +65,7 @@ export async function classifyIntent(
     }
 
     const cleaned = text.trim().toLowerCase();
-    if (cleaned === "shopping" || cleaned === "logistics" || cleaned === "order") {
+    if (cleaned === "shopping" || cleaned === "logistics" || cleaned === "order" || cleaned === "emotional") {
       return cleaned;
     }
     return "general";
@@ -93,27 +98,34 @@ export async function orchestrate({
 
   const intent = await classifyIntent(classifierModel, lastUserMsg);
 
-  let systemPrompt: string;
+  // Always use full CONCIERGE_SYSTEM_PROMPT as base (personality, Sinhala, gender greeting)
+  // then append intent-specific tool instructions.
+  let intentAddendum: string | undefined;
   let tools: ReturnType<typeof getAllTools>;
 
   switch (intent) {
     case "shopping":
-      systemPrompt = getShopperPromptForLanguage(language);
+      intentAddendum = SHOPPER_ADDENDUM;
       tools = getShopperTools() as ReturnType<typeof getAllTools>;
       break;
     case "logistics":
-      systemPrompt = getLogisticsPromptForLanguage(language);
+      intentAddendum = LOGISTICS_ADDENDUM;
       tools = getLogisticsTools() as ReturnType<typeof getAllTools>;
       break;
     case "order":
-      systemPrompt = getOrderPromptForLanguage(language);
+      intentAddendum = ORDER_ADDENDUM;
       tools = getOrderTools() as ReturnType<typeof getAllTools>;
       break;
+    case "emotional":
+      intentAddendum = EMOTIONAL_SUPPORT_ADDENDUM;
+      tools = getAllTools();
+      break;
     default:
-      systemPrompt = getSystemPromptForLanguage(language);
       tools = getAllTools();
       break;
   }
+
+  const systemPrompt = getSystemPromptForLanguage(language, intentAddendum);
 
   return streamText({
     model: agentModel,

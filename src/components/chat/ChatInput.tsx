@@ -3,7 +3,6 @@
 import { useState, useEffect, type RefObject, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatInputProps {
   onSubmit: (text: string) => void;
@@ -17,9 +16,8 @@ export default function ChatInput({
   inputRef,
 }: ChatInputProps) {
   const [text, setText] = useState("");
-  const { language } = useLanguage();
   const { isSupported, isListening, transcript, startListening, stopListening } =
-    useVoiceInput(language);
+    useVoiceInput("en");
 
   useEffect(() => {
     if (transcript) setText(transcript);
