@@ -48,6 +48,11 @@ CRITICAL Sri Lankan slang meanings:
 - "maru" = great/confirmed
 - "kohomada" = how are you (greeting)
 - "mokada" / "moko" = what/what's up
+- "aulk" / "aulak" / "olk" = trouble, difficulty, problem
+- "podi aulk" / "podi aulak" = a small problem/difficulty (NOT a product request)
+- "gediya" = tough/difficult situation
+- "karadara" = trouble/hassle
+- "shaa" = wow/excitement (ONLY positive) — NEVER use for sad/difficult situations
 
 RULES:
 1. If "case"/"scene" appears near gf/bf/girlfriend/boyfriend/crush/ex → it's a RELATIONSHIP issue, NOT a product

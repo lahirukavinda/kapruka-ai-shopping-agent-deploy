@@ -17,7 +17,7 @@ const EMOTIONAL_PATTERNS =
   /\b(sad|happy|angry|stressed|broke up|breakup|break up|miss you|missing|lonely|loneliness|depressed|anxious|worried|scared|excited|celebration|celebrating|engaged|married|divorced|lost someone|passed away|grief|grieving|heartbroken|love|hate|frustrated|overwhelmed|burned out|burnout|promoted|promotion|grateful|thankful|nervous|hurt|crying|tears|died|death|funeral|wedding|anniversary|pregnant|baby born|got fired|laid off|failed|success|achievement|graduated|graduation|retire|retired)\b/i;
 // Sri Lankan slang patterns for relationship/emotional context
 const SL_EMOTIONAL_PATTERNS =
-  /\b(gf|bf|girlfriend|boyfriend|crush|ex)\b.*\b(case|scene|problem|broke|cut|left|gone|fight)\b|\b(case|scene|problem|broke|cut|fight)\b.*\b(gf|bf|girlfriend|boyfriend|crush|ex)\b|\b(patch up|cut kala|case broke|propose kala|case karanawa|love ekak)\b/i;
+  /\b(gf|bf|girlfriend|boyfriend|crush|ex)\b.*\b(case|scene|problem|broke|cut|left|gone|fight)\b|\b(case|scene|problem|broke|cut|fight)\b.*\b(gf|bf|girlfriend|boyfriend|crush|ex)\b|\b(patch up|cut kala|case broke|propose kala|case karanawa|love ekak|podi aulk|podi aulak|aulk|aulak|gediya)\b/i;
 
 /**
  * Fast rule-based intent detection. Returns null when uncertain so we can
@@ -96,7 +96,7 @@ interface OrchestrateParams {
 /**
  * Build a context hint from normalized slang tokens to inject into the system prompt.
  */
-function buildSlangContext(tokens: SinhalaIntentTokens): string {
+function buildSlangContext(tokens: SinhalaIntentTokens, language: string): string {
   const parts: string[] = [];
   parts.push(`\n\n## Slang Context (auto-parsed from user's message)`);
   parts.push(`- English meaning: "${tokens.englishEquivalent}"`);
@@ -107,6 +107,11 @@ function buildSlangContext(tokens: SinhalaIntentTokens): string {
   }
   parts.push(`- Is this a product request? ${tokens.isProductRequest ? "Yes" : "No"}`);
   parts.push(`Use this context to respond appropriately. The user's ACTUAL meaning is: "${tokens.englishEquivalent}"`);
+  if (language === "tanglish") {
+    parts.push(`\nREMINDER: The user wrote in Tanglish. You MUST respond in Tanglish — mix actual Sinhala Unicode letters (සිංහල) with English. Do NOT respond in pure English.`);
+  } else if (language === "si") {
+    parts.push(`\nREMINDER: The user wrote in Sinhala. You MUST respond entirely in Sinhala Unicode script.`);
+  }
   return parts.join("\n");
 }
 
@@ -175,7 +180,7 @@ export async function orchestrate({
   }
 
   // Append slang context if we have normalized tokens
-  const slangContext = slangTokens ? buildSlangContext(slangTokens) : "";
+  const slangContext = slangTokens ? buildSlangContext(slangTokens, language) : "";
   const systemPrompt = getSystemPromptForLanguage(language, intentAddendum) + slangContext;
 
   return streamText({

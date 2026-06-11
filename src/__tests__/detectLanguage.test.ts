@@ -64,6 +64,14 @@ describe("detectLanguage", () => {
     it("detects 'camera ekak balanna one under 50000' as Tanglish", () => {
       expect(detectLanguage("camera ekak balanna one under 50000")).toBe("tanglish");
     });
+
+    it("detects 'podi aulk bro' as Tanglish (mixed with English 'bro')", () => {
+      expect(detectLanguage("podi aulk bro")).toBe("tanglish");
+    });
+
+    it("detects 'gf case machan' as Tanglish", () => {
+      expect(detectLanguage("gf case machan")).toBe("tanglish");
+    });
   });
 
   describe("English → 'en' (respond in English)", () => {
