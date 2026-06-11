@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import type { LanguageModelV1, CoreMessage } from "ai";
-import { getSystemPromptForLanguage, SHOPPER_SYSTEM_PROMPT, LOGISTICS_SYSTEM_PROMPT, ORDER_SYSTEM_PROMPT } from "./concierge";
+import { getSystemPromptForLanguage, getShopperPromptForLanguage, getLogisticsPromptForLanguage, getOrderPromptForLanguage } from "./concierge";
 import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "./tools";
 
 type Intent = "shopping" | "logistics" | "order" | "general";
@@ -98,15 +98,15 @@ export async function orchestrate({
 
   switch (intent) {
     case "shopping":
-      systemPrompt = SHOPPER_SYSTEM_PROMPT;
+      systemPrompt = getShopperPromptForLanguage(language);
       tools = getShopperTools() as ReturnType<typeof getAllTools>;
       break;
     case "logistics":
-      systemPrompt = LOGISTICS_SYSTEM_PROMPT;
+      systemPrompt = getLogisticsPromptForLanguage(language);
       tools = getLogisticsTools() as ReturnType<typeof getAllTools>;
       break;
     case "order":
-      systemPrompt = ORDER_SYSTEM_PROMPT;
+      systemPrompt = getOrderPromptForLanguage(language);
       tools = getOrderTools() as ReturnType<typeof getAllTools>;
       break;
     default:
