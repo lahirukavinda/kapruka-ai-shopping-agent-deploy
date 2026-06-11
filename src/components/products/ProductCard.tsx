@@ -14,7 +14,7 @@ interface ProductCardProps {
 function getStockColor(product: Product) {
   if (!product.inStock) return "text-red-500 bg-red-50 dark:bg-red-900/30";
   if (product.stockLevel === "low") return "text-amber-600 bg-amber-50 dark:bg-amber-900/30";
-  return "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30";
+  return "text-violet-600 bg-violet-50 dark:bg-violet-900/30";
 }
 
 function getStockLabel(product: Product) {
@@ -26,7 +26,7 @@ function getStockLabel(product: Product) {
 function getStockDot(product: Product) {
   if (!product.inStock) return "bg-red-500";
   if (product.stockLevel === "low") return "bg-amber-500";
-  return "bg-emerald-500";
+  return "bg-violet-500";
 }
 
 export default function ProductCard({
@@ -136,7 +136,7 @@ export default function ProductCard({
             animate={controls}
             disabled={!product.inStock}
             className="touch-target flex-1 py-2 px-3 text-xs font-semibold rounded-xl
-              bg-gradient-to-r from-aura-gold to-aura-emerald hover:from-yellow-600 hover:to-emerald-700
+              bg-gradient-to-r from-aura-gold to-aura-emerald hover:from-yellow-600 hover:to-violet-700
               text-white shadow-sm hover:shadow-md
               disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >

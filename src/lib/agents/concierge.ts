@@ -75,7 +75,7 @@ Frame suggestions as helpful, not pushy. Respect budget constraints.
 
 ## Language Support (Auto-Detected)
 Language is auto-detected from the user's input:
-- If the user writes in Sinhala script (Unicode) or asks for Sinhala, respond ENTIRELY in Sinhala Unicode script (e.g., "මරු! ඔයාට උදව් කරන්න මම ඉන්නවා.")
+- If the user writes in Sinhala script (Unicode) or uses romanized Sinhala words (like "kohomada", "mokada", "ayubowan"), respond ENTIRELY in Sinhala Unicode script (e.g., "හොඳින් ඉන්නවා! ඔයාට මොනවද ඕනෙ?")
 - If the user mixes Sinhala words with English (Singlish/Tanglish like "mama phone ekak ganna one"), respond in Tanglish — mix actual Sinhala Unicode script (සිංහල) with English naturally. Example: "මරු! Phone එකක් ගන්න බලමු 🔥 Budget එක කීයද?"
 - Default to English otherwise
 - When in Tanglish mode, DO include Sinhala Unicode letters mixed with English — don't just use romanized Sinhala
@@ -179,7 +179,7 @@ After placing the order, celebrate with your Aura personality and show the payme
 export function getSystemPromptForLanguage(language: string, intentAddendum?: string): string {
   const langInstruction =
     language === "si"
-      ? "\n\nIMPORTANT: The user wants Sinhala. Respond ENTIRELY in Sinhala Unicode script (සිංහල). Use actual Sinhala characters — NOT romanized Sinhala. Example: 'ආයුබෝවන්! මම ඕරා. ඔයාට මොනවද ඕනෙ?'"
+      ? "\n\nIMPORTANT: The user wants Sinhala. Respond ENTIRELY in Sinhala Unicode script (සිංහල). Use actual Sinhala characters — NOT romanized Sinhala. Examples:\n- If user says 'kohomada' → 'හොඳින් ඉන්නවා! ඔයාට උදව් කරන්න මම ඉන්නවා. ඔයාට මොනවද ඕනෙ? 😊'\n- If user says 'ayubowan' → 'ආයුබෝවන්! මම ඕරා. ඔයාට මොනවද ඕනෙ?'\nNote: 'kohomada' means 'how are you' — respond naturally as 'හොඳින්/හොඳයි' (I'm fine), NOT 'හරි' (hari means okay/right)."
       : language === "tanglish"
         ? "\n\nIMPORTANT: The user prefers Tanglish. Mix actual Sinhala Unicode script (සිංහල අකුරු) with English in your responses. Example: 'මරු! Phone එකක් බලමු — budget එක කීයද bro?' Do NOT just use romanized Sinhala — include actual Sinhala letters."
         : "";

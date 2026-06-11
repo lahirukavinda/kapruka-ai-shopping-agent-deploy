@@ -273,12 +273,12 @@ export default function ChatContainer() {
                 <circle cx="140" cy="80" r="50" fill="url(#haloGrad)" />
                 <defs>
                   <radialGradient id="treeGrad" cx="50%" cy="40%">
-                    <stop offset="0%" stopColor="#2D6A4F" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#1B4332" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#402970" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#2A1B4E" stopOpacity="0" />
                   </radialGradient>
                   <radialGradient id="treeInner" cx="50%" cy="40%">
-                    <stop offset="0%" stopColor="#52B788" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#2D6A4F" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#6B4FA0" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#402970" stopOpacity="0" />
                   </radialGradient>
                   <radialGradient id="haloGrad" cx="50%" cy="50%">
                     <stop offset="0%" stopColor="#FFD700" stopOpacity="0.5" />
@@ -306,8 +306,7 @@ export default function ChatContainer() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <span className="gradient-text-animated">Ayubowan!</span>{" "}
-                <span className="text-gray-900 dark:text-gray-100">🙏</span>
+                <span className="gradient-text-animated">Ayubowan!</span>
               </motion.h2>
 
               {/* Subtitle in glassmorphism card */}
@@ -318,7 +317,8 @@ export default function ChatContainer() {
                 transition={{ delay: 0.35 }}
               >
                 <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
-                  I&apos;m <strong className="gradient-text font-bold">Aura</strong> (ඕරා), your divine shopping companion from the Kapruka tree.
+                  I&apos;m <strong className="gradient-text font-bold">Aura</strong>, your divine shopping companion from the{" "}
+                  <a href="https://www.kapruka.com" target="_blank" rel="noopener noreferrer" className="text-aura-gold hover:text-aura-halo underline decoration-aura-gold/30 hover:decoration-aura-gold transition-colors font-semibold">Kapruka</a>.
                 </p>
               </motion.div>
               <motion.p
