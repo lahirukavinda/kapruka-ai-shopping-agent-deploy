@@ -15,6 +15,7 @@ import ProductDetail from "@/components/products/ProductDetail";
 import CheckoutFlow, { type OrderDetails } from "@/components/checkout/CheckoutFlow";
 import ChatHistory from "./ChatHistory";
 import AuraAvatar from "./AuraAvatar";
+import GoldenTreeBackground from "./GoldenTreeBackground";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import { useChatHistory, type ChatSession } from "@/contexts/ChatHistoryContext";
@@ -212,11 +213,12 @@ export default function ChatContainer() {
 
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin chat-bg"
+        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin chat-bg relative"
         role="log"
         aria-label="Chat conversation"
         aria-live="polite"
       >
+        <GoldenTreeBackground />
         <AnimatePresence>
           {showWelcome && (
             <motion.div
