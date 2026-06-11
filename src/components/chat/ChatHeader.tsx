@@ -2,9 +2,8 @@
 
 import AuraAvatar from "./AuraAvatar";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
-import type { AvatarState, Language } from "@/types";
+import type { AvatarState } from "@/types";
 
 interface ChatHeaderProps {
   avatarState: AvatarState;
@@ -12,19 +11,9 @@ interface ChatHeaderProps {
   onHistoryOpen?: () => void;
 }
 
-const langLabels: Record<Language, string> = {
-  en: "EN",
-  si: "සිං",
-  tanglish: "TG",
-};
-
 export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: ChatHeaderProps) {
   const { theme, toggle: toggleTheme } = useTheme();
-  const { language, setLanguage } = useLanguage();
   const { totalItems } = useCart();
-
-  const languages: Language[] = ["en", "si", "tanglish"];
-  const nextLang = languages[(languages.indexOf(language) + 1) % languages.length];
 
   return (
     <header className="glass-header flex items-center justify-between px-4 py-3 z-20 relative">
@@ -56,16 +45,6 @@ export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: C
             📋
           </button>
         )}
-
-        {/* Language toggle */}
-        <button
-          onClick={() => setLanguage(nextLang)}
-          className="header-btn touch-target px-3 py-1.5 text-xs font-semibold rounded-full
-            text-gray-600 dark:text-gray-400"
-          aria-label={`Switch language to ${nextLang}`}
-        >
-          {langLabels[language]}
-        </button>
 
         {/* Theme toggle */}
         <button
