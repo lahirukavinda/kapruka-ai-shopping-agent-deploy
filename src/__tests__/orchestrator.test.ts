@@ -6,10 +6,10 @@ vi.mock("ai", () => ({
 }));
 
 vi.mock("@/lib/agents/concierge", () => ({
-  getSystemPromptForLanguage: vi.fn((lang: string) => `system-prompt-${lang}`),
-  getShopperPromptForLanguage: vi.fn((lang: string) => `shopper-prompt-${lang}`),
-  getLogisticsPromptForLanguage: vi.fn((lang: string) => `logistics-prompt-${lang}`),
-  getOrderPromptForLanguage: vi.fn((lang: string) => `order-prompt-${lang}`),
+  getSystemPromptForLanguage: vi.fn((lang: string, addendum?: string) => `system-prompt-${lang}${addendum ? addendum : ""}`),
+  SHOPPER_ADDENDUM: "-shopper",
+  LOGISTICS_ADDENDUM: "-logistics",
+  ORDER_ADDENDUM: "-order",
 }));
 
 vi.mock("@/lib/agents/tools", () => ({
@@ -155,7 +155,7 @@ describe("orchestrate", () => {
 
     expect(mockStreamText).toHaveBeenCalledTimes(1);
     const agentCall = mockStreamText.mock.calls[0][0];
-    expect(agentCall.system).toBe("shopper-prompt-en");
+    expect(agentCall.system).toBe("system-prompt-en-shopper");
     expect(getShopperTools).toHaveBeenCalled();
   });
 
@@ -172,7 +172,7 @@ describe("orchestrate", () => {
     });
 
     const agentCall = mockStreamText.mock.calls[0][0];
-    expect(agentCall.system).toBe("logistics-prompt-en");
+    expect(agentCall.system).toBe("system-prompt-en-logistics");
     expect(getLogisticsTools).toHaveBeenCalled();
   });
 
@@ -189,7 +189,7 @@ describe("orchestrate", () => {
     });
 
     const agentCall = mockStreamText.mock.calls[0][0];
-    expect(agentCall.system).toBe("order-prompt-en");
+    expect(agentCall.system).toBe("system-prompt-en-order");
     expect(getOrderTools).toHaveBeenCalled();
   });
 

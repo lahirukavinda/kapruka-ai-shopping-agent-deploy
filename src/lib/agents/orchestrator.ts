@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import type { LanguageModelV1, CoreMessage } from "ai";
-import { getSystemPromptForLanguage, getShopperPromptForLanguage, getLogisticsPromptForLanguage, getOrderPromptForLanguage } from "./concierge";
+import { getSystemPromptForLanguage, SHOPPER_ADDENDUM, LOGISTICS_ADDENDUM, ORDER_ADDENDUM } from "./concierge";
 import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "./tools";
 
 type Intent = "shopping" | "logistics" | "order" | "general";
@@ -93,27 +93,30 @@ export async function orchestrate({
 
   const intent = await classifyIntent(classifierModel, lastUserMsg);
 
-  let systemPrompt: string;
+  // Always use full CONCIERGE_SYSTEM_PROMPT as base (personality, Sinhala, gender greeting)
+  // then append intent-specific tool instructions.
+  let intentAddendum: string | undefined;
   let tools: ReturnType<typeof getAllTools>;
 
   switch (intent) {
     case "shopping":
-      systemPrompt = getShopperPromptForLanguage(language);
+      intentAddendum = SHOPPER_ADDENDUM;
       tools = getShopperTools() as ReturnType<typeof getAllTools>;
       break;
     case "logistics":
-      systemPrompt = getLogisticsPromptForLanguage(language);
+      intentAddendum = LOGISTICS_ADDENDUM;
       tools = getLogisticsTools() as ReturnType<typeof getAllTools>;
       break;
     case "order":
-      systemPrompt = getOrderPromptForLanguage(language);
+      intentAddendum = ORDER_ADDENDUM;
       tools = getOrderTools() as ReturnType<typeof getAllTools>;
       break;
     default:
-      systemPrompt = getSystemPromptForLanguage(language);
       tools = getAllTools();
       break;
   }
+
+  const systemPrompt = getSystemPromptForLanguage(language, intentAddendum);
 
   return streamText({
     model: agentModel,
