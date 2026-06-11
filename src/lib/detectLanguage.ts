@@ -8,31 +8,46 @@ const SINHALA_REGEX = /[\u0D80-\u0DFF]/;
 const SINHALA_REQUEST_PATTERNS =
   /\b(sinhalen|sinhala|sinhalese|sinhala\s+walata|sinhala\s+karanawa)\b/i;
 
-// Manually curated core Sinhala slang/chat words that use informal romanization
-// not present in the SinhalaSinglish-DB dictionary.
-// These are how Sri Lankans ACTUALLY type in casual conversation.
+// Manually curated Sinhala words that use informal romanization not present in
+// the SinhalaSinglish-DB dictionary, plus high-frequency conversational words
+// extracted from a 34K-sentence Sinhala↔English parallel corpus.
 const EXTRA_SINHALA_WORDS = new Set([
   // Common greetings & courtesy (informal romanization)
   "kohomada", "mokada", "ayubowan", "isthuthi", "sthuthi", "subha", "dawasak",
-  // Pronouns & particles
+  "sthuthiyi", "samawenna",
+  // Pronouns & particles (informal + corpus-derived formal forms)
   "mama", "oya", "mage", "oyage", "eyage", "magey", "eya", "meka",
   "api", "umba", "mang", "oyata", "eyata", "mata",
+  "oba", "obata", "ohu", "ohuta", "ohuge", "obawa", "obe",
+  "meya", "eyawa", "oyawa", "owun",
   // Common verbs (informal romanization)
   "ganna", "kiyanna", "danna", "balanna", "denna", "karanna", "hadanna",
   "kiyanawa", "karanawa", "wenawa", "innawa", "yanawa",
   "huganawa", "araganna", "kanna", "bonna", "yamu", "gamu",
   "kiyala", "kiyanawada", "balamu", "dannawa", "hadamu",
   "karapu", "giya", "aawa", "keruwa", "dunna", "gatte", "ahanna", "yawanna",
+  // Corpus-derived verb forms (high frequency)
+  "karanne", "karana", "kala", "kara", "kale",
+  "kireemata", "geneemata", "sitina", "yanne",
+  "danne", "kiwwa", "laba",
   // Common adjectives & responses
   "hoda", "hondai", "narkai", "narakay", "hodai",
   "puluwanda", "puluwan", "bari", "epa",
+  "honda", "hondin", "hekiya", "heki",
+  "eththatama", "wishwasa", "kemathi", "yuthu",
   // Question words
   "monawada", "kawuda", "kavuda", "kavda", "kohe",
-  // Common modifiers
+  "mokakda", "koheda",
+  // Common modifiers & connectors
   "godak", "tikak", "ithin", "thamai", "nemei", "neda", "onna",
   "hariyata", "hondatama", "ikmanin", "pamanak", "witharai",
   "vadi", "gaana", "kiyada", "aduvata", "ikmanata", "parakkuda",
   "ganan", "vidiyata", "wisthara", "thaggak", "gedarata",
+  // Corpus-derived connectors (high frequency)
+  "namuth", "ethi", "saha", "lesa", "wage", "sandaha",
+  "samanga", "athara", "bawa", "apata", "ona", "adahas",
+  // Negation
+  "nehe", "netha", "nethi", "nowe",
   // Size words
   "podi", "loku",
   // Slang & expressions
@@ -43,12 +58,15 @@ const EXTRA_SINHALA_WORDS = new Set([
   "aulk", "aulak", "olk", "gediya", "karadara",
   // Emotional words
   "dukai", "sathutu", "kopaya",
+  "waira", "ridena", "mahansi", "baya",
+  "saththuta", "duka", "santhosha",
   // Language request
   "sinhalen",
   // Common nouns
   "eka", "ekak", "nisa", "hari",
+  "katha", "deyak", "wada",
   // Other informal forms not in dictionary
-  "bohoma", "hondai",
+  "bohoma",
 ]);
 
 // Words that exist in the dictionary but are also common English words — exclude from detection

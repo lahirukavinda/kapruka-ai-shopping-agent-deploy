@@ -2,6 +2,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import type { LanguageModelV1 } from "ai";
 import { SINGLISH_TO_ENGLISH, ENGLISH_TO_SINHALA } from "@/data/sinhalaWordMap";
+import { SENTENCE_PAIRS } from "@/data/sinhalaSentencePairs";
 
 // ─── Structured output schema for Sinhala slang parsing ──────────────────────
 // Uses OpenAI structured outputs (via Vercel AI SDK's generateObject) to convert
@@ -83,8 +84,27 @@ function buildDictionaryContext(message: string): string {
     }
   }
 
-  if (translations.length === 0) return "";
-  return `\nDictionary translations for words in this message:\n${translations.join("\n")}`;
+  // Find similar sentence pairs as few-shot examples
+  const exampleLines: string[] = [];
+  for (const pair of SENTENCE_PAIRS) {
+    const pairWords = pair.singlish.toLowerCase().split(/\s+/);
+    const overlap = words.filter(w => pairWords.includes(w));
+    if (overlap.length >= 2) {
+      exampleLines.push(`"${pair.singlish}" → "${pair.english}"`);
+      if (exampleLines.length >= 3) break;
+    }
+  }
+
+  const parts: string[] = [];
+  if (translations.length > 0) {
+    parts.push(`Dictionary translations:\n${translations.join("\n")}`);
+  }
+  if (exampleLines.length > 0) {
+    parts.push(`Similar sentence examples:\n${exampleLines.join("\n")}`);
+  }
+
+  if (parts.length === 0) return "";
+  return "\n" + parts.join("\n\n");
 }
 
 /**
