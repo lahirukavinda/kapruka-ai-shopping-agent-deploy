@@ -14,6 +14,9 @@ const ORDER_PATTERNS =
   /\b(place.*(my|the)?\s*order|checkout|confirm.*order|complete.*purchase|cart.*order)\b/i;
 const EMOTIONAL_PATTERNS =
   /\b(sad|happy|angry|stressed|broke up|breakup|break up|miss you|missing|lonely|loneliness|depressed|anxious|worried|scared|excited|celebration|celebrating|engaged|married|divorced|lost someone|passed away|grief|grieving|heartbroken|love|hate|frustrated|overwhelmed|burned out|burnout|promoted|promotion|grateful|thankful|nervous|hurt|crying|tears|died|death|funeral|wedding|anniversary|pregnant|baby born|got fired|laid off|failed|success|achievement|graduated|graduation|retire|retired)\b/i;
+// Sri Lankan slang patterns for relationship/emotional context
+const SL_EMOTIONAL_PATTERNS =
+  /\b(gf|bf|girlfriend|boyfriend|crush|ex)\b.*\b(case|scene|problem|broke|cut|left|gone|fight)\b|\b(case|scene|problem|broke|cut|fight)\b.*\b(gf|bf|girlfriend|boyfriend|crush|ex)\b|\b(patch up|cut kala|case broke|propose kala|case karanawa|love ekak)\b/i;
 
 /**
  * Fast rule-based intent detection. Returns null when uncertain so we can
@@ -28,6 +31,7 @@ export function classifyIntentByRules(message: string): Intent | null {
   if (LOGISTICS_PATTERNS.test(trimmed)) return "logistics";
   // Emotional patterns before shopping — empathy first
   if (EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
+  if (SL_EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SHOPPING_PATTERNS.test(trimmed)) return "shopping";
 
   return null; // uncertain -> fall back to LLM
@@ -40,6 +44,13 @@ Given a user message, classify the intent into exactly one of these categories:
 - "order": placing an order, "place my order", checkout with items and delivery details
 - "emotional": messages expressing emotions (sadness, joy, stress, loneliness, celebrations, grief, heartbreak, excitement, etc.)
 - "general": order tracking, greetings, addressing preferences, anything else
+
+IMPORTANT Sri Lankan slang context:
+- "case" with gf/bf/girlfriend/boyfriend = relationship problem (NOT a phone case)
+- "scene" with relationship words = drama/situation
+- "cut kala" = got ghosted/ignored
+- "case broke" = relationship ended
+When relationship words appear with "case", "scene", "cut", "broke" → classify as "emotional"
 
 Respond with ONLY the intent word, nothing else.`;
 
