@@ -35,6 +35,8 @@ Manual and automated test cases for verifying language detection, emotional supp
 | `birthday gift ekak ganna one` | `tanglish` | Mix Sinhala Unicode + English |
 | `mage gf` | `tanglish` | Mix Sinhala Unicode + English |
 | `camera ekak balanna one under 50000` | `tanglish` | Mix Sinhala Unicode + English |
+| `podi aulk bro` | `tanglish` | Mix Sinhala Unicode + English (emotional empathy) |
+| `gf case machan` | `tanglish` | Mix Sinhala Unicode + English (emotional empathy) |
 
 ### English → Respond in English
 
@@ -83,6 +85,38 @@ Manual and automated test cases for verifying language detection, emotional supp
 | `work is stressing me out` | No | "That sounds tough" + empathy |
 | `my dog died` | Yes (loss) | "Aiyo..." + condolences |
 
+### "Shaa!" Usage Rule
+**"Shaa!" is ONLY for excitement, celebration, or wow moments.** NEVER for sad, stressed, or difficult situations.
+
+| Input | Expected "Shaa!"? | Expected Response |
+|-------|-------------------|-------------------|
+| `podi aulk machan` (small problem) | NO | Empathetic — "mokada vune?" / "That sounds tough" |
+| `aulak thamai` (having trouble) | NO | Empathetic — ask what happened |
+| `I got promoted!` | Yes (celebration) | "Shaa!" / "Maru!" + congratulations |
+| `I just got a new job!` | Yes (celebration) | Excitement + celebration |
+| `gf case machan` (relationship problem) | NO | Empathetic — "mokada vune machan?" in Tanglish |
+
+### Sri Lankan Slang Emotional Patterns (Automated: `orchestrator.test.ts`)
+
+| Input | Expected Intent | Notes |
+|-------|----------------|-------|
+| `gf case machan` | `emotional` | "case" = relationship problem, NOT phone case |
+| `my boyfriend scene is messed up` | `emotional` | "scene" = drama/situation |
+| `ex cut kala` | `emotional` | "cut kala" = ghosted/broke up |
+| `case broke with my crush` | `emotional` | Reversed word order still matches |
+| `patch up karanawa` | `emotional` | Trying to reconcile |
+| `podi aulk machan` | `emotional` | "podi aulk" = small problem |
+| `aulak thamai` | `emotional` | Having trouble |
+| `gediya wedi` | `emotional` | Tough situation |
+
+### Language Matching in Emotional Responses
+
+| Input Language | Expected Response Language |
+|---------------|--------------------------|
+| `gf case machan` (Tanglish) | Tanglish — mix Sinhala Unicode + English (e.g., "Aiyo... මොකද වුනේ machan?") |
+| `podi aulk` (Sinhala words only) | Sinhala Unicode |
+| `I'm feeling sad` (English) | English |
+
 ### Emotional Intent Detection
 These should trigger the `emotional` intent (NOT shopping):
 
@@ -103,7 +137,7 @@ These should trigger the `emotional` intent (NOT shopping):
 |-----------|-------|----------|
 | Product search | Type "show me birthday cakes under 5000 LKR" | Product cards with images, prices, buttons |
 | Add to cart | Click "Add to Cart" on a product | Cart count increases |
-| Category browse | Click "Browse categories" chip | Category tiles appear |
+| Category browse | Click "Browse categories" chip | Category tiles appear at top. NO duplicated category buttons at bottom |
 | Delivery check | Ask "can you deliver to Colombo?" | Logistics response |
 | Dark mode | Click moon/sun toggle | UI switches theme |
 | Chat history | Click clipboard icon | History panel slides out |
