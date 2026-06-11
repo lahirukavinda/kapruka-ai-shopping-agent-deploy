@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock the streamText function before importing orchestrator
 vi.mock("ai", () => ({
   streamText: vi.fn(),
+  generateObject: vi.fn(),
 }));
 
 vi.mock("@/lib/agents/concierge", () => ({
@@ -10,6 +11,11 @@ vi.mock("@/lib/agents/concierge", () => ({
   SHOPPER_ADDENDUM: "-shopper",
   LOGISTICS_ADDENDUM: "-logistics",
   ORDER_ADDENDUM: "-order",
+  EMOTIONAL_SUPPORT_ADDENDUM: "-emotional",
+}));
+
+vi.mock("@/lib/sinhalaSlangNormalizer", () => ({
+  normalizeSlang: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("@/lib/agents/tools", () => ({
@@ -68,6 +74,20 @@ describe("classifyIntentByRules", () => {
     expect(classifyIntentByRules("place my order")).toBe("order");
     expect(classifyIntentByRules("checkout")).toBe("order");
     expect(classifyIntentByRules("confirm order")).toBe("order");
+  });
+
+  it("detects Sri Lankan slang emotional patterns", () => {
+    expect(classifyIntentByRules("gf case machan")).toBe("emotional");
+    expect(classifyIntentByRules("my boyfriend scene is messed up")).toBe("emotional");
+    expect(classifyIntentByRules("ex cut kala")).toBe("emotional");
+    expect(classifyIntentByRules("case broke with my crush")).toBe("emotional");
+    expect(classifyIntentByRules("patch up karanawa")).toBe("emotional");
+  });
+
+  it("does NOT classify literal phone case as emotional", () => {
+    // "phone case" has no relationship words nearby — should NOT match SL patterns
+    expect(classifyIntentByRules("show me phone cases")).toBe("shopping");
+    expect(classifyIntentByRules("buy a case for my iPhone")).toBe("shopping");
   });
 
   it("returns null for ambiguous messages", () => {

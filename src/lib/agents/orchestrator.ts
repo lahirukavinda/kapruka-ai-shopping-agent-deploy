@@ -2,6 +2,7 @@ import { streamText } from "ai";
 import type { LanguageModelV1, CoreMessage } from "ai";
 import { getSystemPromptForLanguage, SHOPPER_ADDENDUM, LOGISTICS_ADDENDUM, ORDER_ADDENDUM, EMOTIONAL_SUPPORT_ADDENDUM } from "./concierge";
 import { getAllTools, getShopperTools, getLogisticsTools, getOrderTools } from "./tools";
+import { normalizeSlang, type SinhalaIntentTokens } from "../sinhalaSlangNormalizer";
 
 type Intent = "shopping" | "logistics" | "order" | "emotional" | "general";
 
@@ -14,6 +15,9 @@ const ORDER_PATTERNS =
   /\b(place.*(my|the)?\s*order|checkout|confirm.*order|complete.*purchase|cart.*order)\b/i;
 const EMOTIONAL_PATTERNS =
   /\b(sad|happy|angry|stressed|broke up|breakup|break up|miss you|missing|lonely|loneliness|depressed|anxious|worried|scared|excited|celebration|celebrating|engaged|married|divorced|lost someone|passed away|grief|grieving|heartbroken|love|hate|frustrated|overwhelmed|burned out|burnout|promoted|promotion|grateful|thankful|nervous|hurt|crying|tears|died|death|funeral|wedding|anniversary|pregnant|baby born|got fired|laid off|failed|success|achievement|graduated|graduation|retire|retired)\b/i;
+// Sri Lankan slang patterns for relationship/emotional context
+const SL_EMOTIONAL_PATTERNS =
+  /\b(gf|bf|girlfriend|boyfriend|crush|ex)\b.*\b(case|scene|problem|broke|cut|left|gone|fight)\b|\b(case|scene|problem|broke|cut|fight)\b.*\b(gf|bf|girlfriend|boyfriend|crush|ex)\b|\b(patch up|cut kala|case broke|propose kala|case karanawa|love ekak)\b/i;
 
 /**
  * Fast rule-based intent detection. Returns null when uncertain so we can
@@ -28,6 +32,7 @@ export function classifyIntentByRules(message: string): Intent | null {
   if (LOGISTICS_PATTERNS.test(trimmed)) return "logistics";
   // Emotional patterns before shopping — empathy first
   if (EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
+  if (SL_EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SHOPPING_PATTERNS.test(trimmed)) return "shopping";
 
   return null; // uncertain -> fall back to LLM
@@ -40,6 +45,13 @@ Given a user message, classify the intent into exactly one of these categories:
 - "order": placing an order, "place my order", checkout with items and delivery details
 - "emotional": messages expressing emotions (sadness, joy, stress, loneliness, celebrations, grief, heartbreak, excitement, etc.)
 - "general": order tracking, greetings, addressing preferences, anything else
+
+IMPORTANT Sri Lankan slang context:
+- "case" with gf/bf/girlfriend/boyfriend = relationship problem (NOT a phone case)
+- "scene" with relationship words = drama/situation
+- "cut kala" = got ghosted/ignored
+- "case broke" = relationship ended
+When relationship words appear with "case", "scene", "cut", "broke" → classify as "emotional"
 
 Respond with ONLY the intent word, nothing else.`;
 
@@ -81,6 +93,23 @@ interface OrchestrateParams {
   language: string;
 }
 
+/**
+ * Build a context hint from normalized slang tokens to inject into the system prompt.
+ */
+function buildSlangContext(tokens: SinhalaIntentTokens): string {
+  const parts: string[] = [];
+  parts.push(`\n\n## Slang Context (auto-parsed from user's message)`);
+  parts.push(`- English meaning: "${tokens.englishEquivalent}"`);
+  parts.push(`- Detected intent: ${tokens.normalizedIntent}`);
+  parts.push(`- Emotional tone: ${tokens.emotionalTone}`);
+  if (tokens.slangDetected.length > 0) {
+    parts.push(`- Slang terms found: ${tokens.slangDetected.join(", ")}`);
+  }
+  parts.push(`- Is this a product request? ${tokens.isProductRequest ? "Yes" : "No"}`);
+  parts.push(`Use this context to respond appropriately. The user's ACTUAL meaning is: "${tokens.englishEquivalent}"`);
+  return parts.join("\n");
+}
+
 export async function orchestrate({
   classifierModel,
   agentModel,
@@ -96,7 +125,27 @@ export async function orchestrate({
       : ""
     : "";
 
-  const intent = await classifyIntent(classifierModel, lastUserMsg);
+  // For Sinhala/Tanglish messages, run slang normalizer in parallel with intent classification
+  let slangTokens: SinhalaIntentTokens | null = null;
+  let intent: Intent;
+
+  if (language === "tanglish" || language === "si") {
+    const [normalizedResult, classifiedIntent] = await Promise.all([
+      normalizeSlang(classifierModel, lastUserMsg),
+      classifyIntent(classifierModel, lastUserMsg),
+    ]);
+    slangTokens = normalizedResult;
+    // Override intent if slang normalizer detected a non-product emotional/relationship message
+    if (slangTokens && !slangTokens.isProductRequest && 
+        (slangTokens.normalizedIntent === "relationship_issue" || slangTokens.normalizedIntent === "emotional" ||
+         slangTokens.emotionalTone === "sad" || slangTokens.emotionalTone === "angry" || slangTokens.emotionalTone === "stressed")) {
+      intent = "emotional";
+    } else {
+      intent = classifiedIntent;
+    }
+  } else {
+    intent = await classifyIntent(classifierModel, lastUserMsg);
+  }
 
   // Always use full CONCIERGE_SYSTEM_PROMPT as base (personality, Sinhala, gender greeting)
   // then append intent-specific tool instructions.
@@ -125,7 +174,9 @@ export async function orchestrate({
       break;
   }
 
-  const systemPrompt = getSystemPromptForLanguage(language, intentAddendum);
+  // Append slang context if we have normalized tokens
+  const slangContext = slangTokens ? buildSlangContext(slangTokens) : "";
+  const systemPrompt = getSystemPromptForLanguage(language, intentAddendum) + slangContext;
 
   return streamText({
     model: agentModel,
