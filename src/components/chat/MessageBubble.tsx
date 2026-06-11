@@ -9,9 +9,10 @@ interface MessageBubbleProps {
   content: string;
   isStreaming?: boolean;
   avatarState?: AvatarState;
+  onAction?: (text: string) => void;
 }
 
-function formatInline(text: string): React.ReactNode[] {
+function formatInline(text: string, onAction?: (text: string) => void): React.ReactNode[] {
   // Split by bold, links, and images
   return text.split(/(\*\*[^*]+\*\*|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g).map((part, j) => {
     // Bold
@@ -33,9 +34,28 @@ function formatInline(text: string): React.ReactNode[] {
         </a>
       );
     }
-    // Link [text](url)
+    // Link [text](url) — render as styled chip if onAction available
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (linkMatch) {
+      if (onAction) {
+        return (
+          <button
+            key={j}
+            type="button"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-sm font-medium
+              bg-aura-gold/10 dark:bg-aura-gold/15 text-aura-gold dark:text-aura-goldenLight
+              border border-aura-gold/20 dark:border-aura-gold/25
+              hover:bg-aura-gold/20 dark:hover:bg-aura-gold/25 hover:border-aura-gold/40
+              transition-all duration-200 cursor-pointer"
+            onClick={() => onAction(`Show me ${linkMatch[1]}`)}
+          >
+            {linkMatch[1]}
+            <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        );
+      }
       return (
         <a
           key={j}
@@ -52,11 +72,23 @@ function formatInline(text: string): React.ReactNode[] {
   });
 }
 
-function renderMarkdown(text: string) {
+/** Check if a numbered list item is primarily a markdown link (e.g., "1. [Cakes](url) - description") */
+const LINK_LIST_ITEM_RE = /^\[([^\]]+)\]\(([^)]+)\)\s*[-–—:]?\s*(.*)/;
+
+interface LinkChip {
+  label: string;
+  url: string;
+  description: string;
+}
+
+function renderMarkdown(text: string, onAction?: (text: string) => void) {
   const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
 
-  lines.forEach((line, i) => {
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
     // Headings (### ## #)
     const headingMatch = line.match(/^(#{1,3})\s+(.+)/);
     if (headingMatch) {
@@ -66,22 +98,72 @@ function renderMarkdown(text: string) {
         : level === 2
           ? "text-sm font-bold mt-2 mb-0.5"
           : "text-sm font-semibold mt-1.5 mb-0.5 text-aura-gold dark:text-aura-goldenLight";
-      elements.push(<div key={i} className={cls}>{formatInline(headingMatch[2])}</div>);
-      return;
+      elements.push(<div key={i} className={cls}>{formatInline(headingMatch[2], onAction)}</div>);
+      i++;
+      continue;
     }
 
-    // Numbered list
+    // Numbered list — look ahead to detect consecutive link-list items for chip rendering
     const numMatch = line.match(/^(\d+)\.\s+(.+)/);
+    if (numMatch && onAction) {
+      const linkItemMatch = numMatch[2].match(LINK_LIST_ITEM_RE);
+      if (linkItemMatch) {
+        // Collect consecutive numbered list items that contain links
+        const chips: LinkChip[] = [];
+        let j = i;
+        while (j < lines.length) {
+          const nMatch = lines[j].match(/^\d+\.\s+(.+)/);
+          if (!nMatch) break;
+          const lMatch = nMatch[1].match(LINK_LIST_ITEM_RE);
+          if (!lMatch) break;
+          chips.push({ label: lMatch[1], url: lMatch[2], description: lMatch[3] });
+          j++;
+        }
+
+        if (chips.length >= 2) {
+          // Render as chip grid
+          elements.push(
+            <div key={`chip-grid-${i}`} className="flex flex-wrap gap-2 py-2">
+              {chips.map((chip, ci) => (
+                <button
+                  key={ci}
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium
+                    bg-aura-gold/10 dark:bg-aura-gold/15 text-gray-800 dark:text-gray-100
+                    border border-aura-gold/25 dark:border-aura-gold/30
+                    hover:bg-aura-gold/20 dark:hover:bg-aura-gold/25 hover:border-aura-gold/50
+                    hover:shadow-md hover:shadow-aura-gold/10
+                    active:scale-[0.97]
+                    transition-all duration-200 cursor-pointer"
+                  onClick={() => onAction(`Show me ${chip.label}`)}
+                  title={chip.description || `Browse ${chip.label}`}
+                >
+                  <span className="text-aura-gold dark:text-aura-goldenLight font-semibold">{chip.label}</span>
+                  <svg className="w-3.5 h-3.5 text-aura-gold/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          );
+          i = j;
+          continue;
+        }
+      }
+    }
+
+    // Regular numbered list item
     if (numMatch) {
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
           <span className="text-aura-gold dark:text-aura-goldenLight font-semibold text-xs min-w-[18px] text-right mt-0.5">
             {numMatch[1]}.
           </span>
-          <span className="flex-1">{formatInline(numMatch[2])}</span>
+          <span className="flex-1">{formatInline(numMatch[2], onAction)}</span>
         </div>
       );
-      return;
+      i++;
+      continue;
     }
 
     // Bullet list
@@ -90,20 +172,23 @@ function renderMarkdown(text: string) {
       elements.push(
         <div key={i} className="flex gap-2 py-0.5">
           <span className="text-aura-gold dark:text-aura-goldenLight mt-1">•</span>
-          <span className="flex-1">{formatInline(content)}</span>
+          <span className="flex-1">{formatInline(content, onAction)}</span>
         </div>
       );
-      return;
+      i++;
+      continue;
     }
 
     // Empty line = paragraph break
     if (line.trim() === "") {
       elements.push(<div key={i} className="h-2" />);
-      return;
+      i++;
+      continue;
     }
 
-    elements.push(<div key={i}>{formatInline(line)}</div>);
-  });
+    elements.push(<div key={i}>{formatInline(line, onAction)}</div>);
+    i++;
+  }
 
   return elements;
 }
@@ -113,6 +198,7 @@ export default function MessageBubble({
   content,
   isStreaming = false,
   avatarState = "idle",
+  onAction,
 }: MessageBubbleProps) {
   const prefersReducedMotion = useReducedMotion();
   const isAssistant = role === "assistant";
@@ -154,7 +240,7 @@ export default function MessageBubble({
             : "user-bubble text-white shadow-lg"
         }`}
       >
-        {isAssistant ? renderMarkdown(content) : content}
+        {isAssistant ? renderMarkdown(content, onAction) : content}
         {isStreaming && (
           <span className="inline-block w-1.5 h-4 ml-0.5 bg-amber-500 dark:bg-amber-400 animate-pulse rounded-sm align-text-bottom" />
         )}

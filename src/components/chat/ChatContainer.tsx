@@ -362,6 +362,7 @@ export default function ChatContainer() {
                   content={msg.content}
                   isStreaming={isLoading && msg.id === messages[messages.length - 1]?.id && msg.role === "assistant"}
                   avatarState={avatarState}
+                  onAction={handleQuickAction}
                 />
               )}
 
