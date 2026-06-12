@@ -19,6 +19,8 @@ import GoldenTreeBackground from "./GoldenTreeBackground";
 import { detectLanguage } from "@/lib/detectLanguage";
 import { useCart } from "@/contexts/CartContext";
 import { useChatHistory, type ChatSession } from "@/contexts/ChatHistoryContext";
+import { useCache } from "@/contexts/CacheContext";
+import { detectAddressingMode, getReturningGreeting } from "@/lib/cache/userPrefsCache";
 import { parseResponseActions } from "@/lib/parseResponseActions";
 import type { AvatarState, Product } from "@/types";
 
@@ -40,12 +42,13 @@ export default function ChatContainer() {
 
   const { state: cartState, dispatch: cartDispatch } = useCart();
   const { saveSession } = useChatHistory();
+  const { userPrefs, isReturningUser, setAddressingMode, setPreferredLanguage } = useCache();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(!isReturningUser);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -53,7 +56,17 @@ export default function ChatContainer() {
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
-  const [detectedLanguage, setDetectedLanguage] = useState("en");
+  const [detectedLanguage, setDetectedLanguage] = useState(
+    userPrefs?.preferredLanguage ?? "en"
+  );
+  const [returningGreeting, setReturningGreeting] = useState<string | null>(null);
+
+  // Show personalized greeting for returning users
+  useEffect(() => {
+    if (isReturningUser && userPrefs) {
+      setReturningGreeting(getReturningGreeting(userPrefs));
+    }
+  }, [isReturningUser, userPrefs]);
 
   const { messages, isLoading, append } = useChat({
     api: "/api/chat",
@@ -152,10 +165,23 @@ export default function ChatContainer() {
       setError(null);
       setLastFailedMessage(text);
       setRetryCountdown(0);
-      setDetectedLanguage(detectLanguage(text));
+
+      const lang = detectLanguage(text);
+      setDetectedLanguage(lang);
+      setPreferredLanguage(lang as "en" | "si" | "tanglish");
+
+      // Detect and persist addressing mode from chip clicks
+      const mode = detectAddressingMode(text);
+      if (mode) {
+        setAddressingMode(mode);
+      }
+
+      // Clear returning greeting once user starts chatting
+      if (returningGreeting) setReturningGreeting(null);
+
       append({ role: "user", content: text });
     },
-    [append]
+    [append, setPreferredLanguage, setAddressingMode, returningGreeting]
   );
 
   const handleRetry = useCallback(() => {
@@ -428,6 +454,34 @@ export default function ChatContainer() {
                 <span className="text-aura-gold">×</span>
                 <span className="font-bold text-aura-emerald dark:text-aura-leaf">AI</span>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Returning user greeting */}
+        <AnimatePresence>
+          {returningGreeting && messages.length === 0 && (
+            <motion.div
+              className="max-w-3xl mx-auto mb-4"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="glass-card rounded-2xl px-6 py-5 text-center">
+                <div className="flex justify-center mb-3">
+                  <AuraAvatar state="celebrating" size={64} />
+                </div>
+                <h3 className="text-xl font-bold gradient-text mb-1">
+                  {returningGreeting}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  What can I help you find today?
+                </p>
+                <div className="mt-4">
+                  <QuickActionChips onAction={handleQuickAction} />
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

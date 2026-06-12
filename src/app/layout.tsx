@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ChatHistoryProvider } from "@/contexts/ChatHistoryContext";
+import { CacheProvider } from "@/contexts/CacheContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,9 +41,11 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
-            <CartProvider>
-              <ChatHistoryProvider>{children}</ChatHistoryProvider>
-            </CartProvider>
+            <CacheProvider>
+              <CartProvider>
+                <ChatHistoryProvider>{children}</ChatHistoryProvider>
+              </CartProvider>
+            </CacheProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
