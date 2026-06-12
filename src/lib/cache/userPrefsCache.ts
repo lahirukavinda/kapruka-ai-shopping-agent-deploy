@@ -8,7 +8,20 @@ import { getCache, setCache, invalidateCache } from "./cacheManager";
 const STORAGE_KEY = "aura_user_prefs";
 const NEVER_EXPIRES = Number.MAX_SAFE_INTEGER;
 
-export type AddressingMode = "sir" | "madam" | "bro" | "machan" | "sis" | "name";
+export type AddressingMode =
+  | "sir"
+  | "madam"
+  | "bro"
+  | "machan"
+  | "sis"
+  | "aiya"
+  | "akka"
+  | "nangi"
+  | "malli"
+  | "uncle"
+  | "aunty"
+  | "boss"
+  | "name";
 
 export interface UserPrefs {
   addressingMode: AddressingMode;
@@ -51,7 +64,14 @@ export function detectAddressingMode(message: string): AddressingMode | null {
     { mode: "madam", regex: /call me madam/i },
     { mode: "bro", regex: /call me bro/i },
     { mode: "machan", regex: /call me machan/i },
-    { mode: "sis", regex: /call me sis/i },
+    { mode: "sis", regex: /call me sis\b/i },
+    { mode: "aiya", regex: /call me aiya/i },
+    { mode: "akka", regex: /call me akka/i },
+    { mode: "nangi", regex: /call me nangi/i },
+    { mode: "malli", regex: /call me malli/i },
+    { mode: "uncle", regex: /call me uncle/i },
+    { mode: "aunty", regex: /call me aunt[yi]/i },
+    { mode: "boss", regex: /call me boss/i },
     { mode: "name", regex: /call me by my name/i },
   ];
   for (const { mode, regex } of patterns) {
@@ -60,13 +80,16 @@ export function detectAddressingMode(message: string): AddressingMode | null {
   return null;
 }
 
+/** Display label for an addressing mode (capitalised). */
+export function getAddressingLabel(mode: AddressingMode, name?: string): string {
+  if (mode === "name" && name) return name;
+  return mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
 /**
  * Generate a personalized greeting for a returning user.
  */
 export function getReturningGreeting(prefs: UserPrefs): string {
-  const addressLabel =
-    prefs.addressingMode === "name" && prefs.name
-      ? prefs.name
-      : prefs.addressingMode.charAt(0).toUpperCase() + prefs.addressingMode.slice(1);
-  return `Welcome back, ${addressLabel}!`;
+  const label = getAddressingLabel(prefs.addressingMode, prefs.name);
+  return `Welcome back, ${label}!`;
 }
