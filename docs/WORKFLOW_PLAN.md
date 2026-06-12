@@ -188,11 +188,12 @@ Based on the [Kapruka Agent Challenge rubric](https://www.kapruka.com/contactUs/
 
 | Session | Focus | Deliverable |
 |---|---|---|
-| Session 1 | Cart persistence + delivery flow | Working add-to-cart → delivery city/date validation |
-| Session 2 | Checkout creation + pay link | Full kapruka_create_order integration |
-| Session 3 | Order tracking + conversational checkout | Natural language checkout assistant |
-| Session 4 | UX polish + mobile optimization | Competition-ready polish |
-| Session 5 | Testing + edge cases + Sinhala checkout | Final QA pass |
+| Session 1 | **Caching layer + Cart persistence** | localStorage cache manager, user prefs persistence, cart sync, categories cache (stale-while-revalidate), returning user greeting |
+| Session 2 | **Delivery flow + address cache** | Delivery city autocomplete, date picker, saved addresses, recipient form pre-fill from cache |
+| Session 3 | **Checkout + order creation** | kapruka_create_order integration, pay link display, order confirmation, order history cache |
+| Session 4 | **Order tracking + conversational checkout** | Natural language checkout, repeat orders, cached delivery suggestions |
+| Session 5 | **UX polish + token optimization** | Reduced system prompt, mobile polish, animations, competition-ready |
+| Session 6 | **Testing + edge cases + Sinhala checkout** | Full Tanglish/Sinhala checkout flow, integration test suite, final QA |
 
 ---
 
@@ -214,18 +215,144 @@ Based on the [Kapruka Agent Challenge rubric](https://www.kapruka.com/contactUs/
 
 ---
 
+## Caching Strategy (Priority: HIGH — Implement in Phase 1)
+
+### Why Cache?
+- **Reduce token usage** — Don't re-send full category lists or user context every message
+- **Faster UX** — Instant greetings, pre-populated forms, no waiting for MCP calls
+- **Smooth repeat transactions** — "Same address as last time?" instead of re-collecting
+
+### Cache Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    localStorage                          │
+│                                                         │
+│  aura_user_prefs     → addressing, language, name       │
+│  aura_categories     → categories + TTL timestamp       │
+│  aura_recent_items   → last 20 viewed products          │
+│  aura_delivery_info  → saved recipient details[]        │
+│  aura_cart           → current cart items                │
+│  aura_order_history  → completed order numbers[]        │
+│  aura_top_products   → trending/popular items + TTL     │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│              React Context (in-memory)                    │
+│                                                         │
+│  UserPrefsContext  → hydrated from localStorage on load │
+│  CacheContext      → categories, top items, delivery    │
+│  CartContext       → already exists, add persistence    │
+│  OrderContext      → new: order state machine           │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│           Token Budget Optimization                      │
+│                                                         │
+│  System prompt includes ONLY:                           │
+│  - User pref summary (1 line: "Sir, English, Colombo") │
+│  - Recent intent context (not full history)             │
+│  - Cached delivery info if checkout intent detected     │
+│  - NO full category list (handled client-side)          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### What to Cache
+
+| Data | Storage Key | TTL | Size | Token Savings |
+|------|-------------|-----|------|---------------|
+| User preferences (address mode, language, name) | `aura_user_prefs` | Never expires | ~50 bytes | ~200 tokens/msg (skip re-asking) |
+| Categories list | `aura_categories` | 24 hours | ~2KB | ~800 tokens (skip category tool call) |
+| Top/trending products | `aura_top_products` | 1 hour | ~5KB | ~500 tokens (instant recommendations) |
+| Recently viewed products | `aura_recent_items` | 7 days | ~3KB | ~300 tokens (personalized suggestions) |
+| Delivery details (recipients) | `aura_delivery_info` | Never expires | ~1KB per address | ~400 tokens (skip form re-fill) |
+| Cart state | `aura_cart` | Session + persist | ~2KB | Already exists — add persistence |
+| Order history | `aura_order_history` | Never expires | ~500 bytes per order | Enables "reorder" and tracking |
+
+### Cache Implementation Details
+
+**1. User Preferences Cache (`aura_user_prefs`)**
+```typescript
+interface UserPrefs {
+  addressingMode: 'sir' | 'madam' | 'bro' | 'machan' | 'sis' | 'name';
+  name?: string;
+  preferredLanguage: 'en' | 'si' | 'tanglish';
+  lastVisit: string; // ISO timestamp
+}
+```
+- Populated on first interaction (addressing chip click)
+- On return visit: skip welcome screen, go straight to "Welcome back, Sir! What can I help with?"
+- Language auto-detected from history — don't re-learn each session
+
+**2. Categories Cache (`aura_categories`)**
+```typescript
+interface CachedCategories {
+  data: Category[];
+  fetchedAt: number; // Unix timestamp
+  ttl: 86400000; // 24 hours in ms
+}
+```
+- First "Browse categories" → call MCP, cache response
+- Subsequent requests → serve from cache, render instantly
+- Background refresh if stale (stale-while-revalidate pattern)
+- Token savings: eliminate `kapruka_list_categories` from system prompt context
+
+**3. Delivery Info Cache (`aura_delivery_info`)**
+```typescript
+interface SavedDelivery {
+  id: string;
+  label: string; // "Home", "Office", "Mom's place"
+  recipientName: string;
+  phone: string;
+  address: string;
+  city: string;
+  lastUsed: string;
+}
+```
+- Save after successful order
+- On next checkout: "Deliver to Mom's place again?" → one-click confirmation
+- Multiple saved addresses supported (max 5)
+
+**4. Token Budget Optimization**
+- Current: ~2000 token system prompt + full message history
+- With caching: ~800 token system prompt (user pref summary only) + trimmed history
+- Categories rendered client-side from cache (no LLM involvement)
+- Delivery form pre-filled from cache (no conversational collection needed)
+- Estimated **40-60% token reduction** per conversation
+
+### Cache Invalidation Rules
+
+| Trigger | Action |
+|---------|--------|
+| User clears chat history | Keep preferences, clear recent items |
+| Categories older than 24h | Background refresh on next load |
+| Product data older than 1h | Refresh on next search |
+| User changes addressing mode | Update preferences immediately |
+| Successful order | Save delivery info, add to order history |
+| localStorage full | Evict oldest recent items first |
+
+---
+
 ## Files to Create/Modify
 
 ### New Files
+- `src/lib/cache/cacheManager.ts` — Generic cache utilities (get/set/invalidate with TTL)
+- `src/lib/cache/userPrefsCache.ts` — User preferences persistence
+- `src/lib/cache/categoriesCache.ts` — Categories with stale-while-revalidate
+- `src/lib/cache/deliveryCache.ts` — Saved delivery addresses
+- `src/contexts/CacheContext.tsx` — React context hydrated from localStorage
 - `src/contexts/OrderContext.tsx` — Order state management + localStorage
-- `src/components/checkout/DeliveryForm.tsx` — Full delivery details form
+- `src/components/checkout/DeliveryForm.tsx` — Full delivery details form (pre-filled from cache)
 - `src/components/checkout/PaymentLink.tsx` — Pay link display component
 - `src/components/checkout/CheckoutSummary.tsx` — Final order review
 - `src/lib/agents/checkoutAgent.ts` — Conversational checkout prompts
 
 ### Modified Files
-- `src/components/cart/CartPanel.tsx` — Enhanced multi-item UX
-- `src/components/checkout/CheckoutFlow.tsx` — Wire to MCP order creation
-- `src/lib/agents/orchestrator.ts` — Route checkout/delivery intents
-- `src/lib/agents/concierge.ts` — Add checkout conversation flows
-- `src/app/api/chat/route.ts` — Handle checkout tool calls
+- `src/components/chat/ChatContainer.tsx` — Hydrate user prefs from cache on load, skip welcome if returning user
+- `src/components/cart/CartPanel.tsx` — Enhanced multi-item UX + localStorage sync
+- `src/components/checkout/CheckoutFlow.tsx` — Wire to MCP order creation + pre-fill from cache
+- `src/lib/agents/orchestrator.ts` — Route checkout/delivery intents + inject cached context
+- `src/lib/agents/concierge.ts` — Add checkout conversation flows + reduced system prompt
+- `src/app/api/chat/route.ts` — Handle checkout tool calls + token budget management

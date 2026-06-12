@@ -19,6 +19,8 @@ import GoldenTreeBackground from "./GoldenTreeBackground";
 import { detectLanguage } from "@/lib/detectLanguage";
 import { useCart } from "@/contexts/CartContext";
 import { useChatHistory, type ChatSession } from "@/contexts/ChatHistoryContext";
+import { useCache } from "@/contexts/CacheContext";
+import { detectAddressingMode, getReturningGreeting } from "@/lib/cache/userPrefsCache";
 import { parseResponseActions } from "@/lib/parseResponseActions";
 import type { AvatarState, Product } from "@/types";
 
@@ -40,20 +42,34 @@ export default function ChatContainer() {
 
   const { state: cartState, dispatch: cartDispatch } = useCart();
   const { saveSession } = useChatHistory();
+  const { userPrefs, isReturningUser, setAddressingMode, setPreferredLanguage } = useCache();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(!isReturningUser);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [nameInputValue, setNameInputValue] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
-  const [detectedLanguage, setDetectedLanguage] = useState("en");
+  const [detectedLanguage, setDetectedLanguage] = useState(
+    userPrefs?.preferredLanguage ?? "en"
+  );
+  const [returningGreeting, setReturningGreeting] = useState<string | null>(null);
+
+  // Show personalized greeting for returning users
+  useEffect(() => {
+    if (isReturningUser && userPrefs) {
+      setReturningGreeting(getReturningGreeting(userPrefs));
+    }
+  }, [isReturningUser, userPrefs]);
 
   const { messages, isLoading, append } = useChat({
     api: "/api/chat",
@@ -152,10 +168,23 @@ export default function ChatContainer() {
       setError(null);
       setLastFailedMessage(text);
       setRetryCountdown(0);
-      setDetectedLanguage(detectLanguage(text));
+
+      const lang = detectLanguage(text);
+      setDetectedLanguage(lang);
+      setPreferredLanguage(lang as "en" | "si" | "tanglish");
+
+      // Detect and persist addressing mode from chip clicks
+      const mode = detectAddressingMode(text);
+      if (mode) {
+        setAddressingMode(mode);
+      }
+
+      // Clear returning greeting once user starts chatting
+      if (returningGreeting) setReturningGreeting(null);
+
       append({ role: "user", content: text });
     },
-    [append]
+    [append, setPreferredLanguage, setAddressingMode, returningGreeting]
   );
 
   const handleRetry = useCallback(() => {
@@ -382,7 +411,14 @@ export default function ChatContainer() {
                     { label: "Bro", icon: "😎", value: "Call me Bro" },
                     { label: "Machan", icon: "🤙", value: "Call me Machan" },
                     { label: "Sis", icon: "👧", value: "Call me Sis" },
-                    { label: "Just my name", icon: "✨", value: "Call me by my name" },
+                    { label: "Aiya", icon: "🧑‍🦱", value: "Call me Aiya" },
+                    { label: "Akka", icon: "👩‍🦱", value: "Call me Akka" },
+                    { label: "Nangi", icon: "👧", value: "Call me Nangi" },
+                    { label: "Malli", icon: "👦", value: "Call me Malli" },
+                    { label: "Uncle", icon: "👨‍🦳", value: "Call me Uncle" },
+                    { label: "Aunty", icon: "👩‍🦳", value: "Call me Aunty" },
+                    { label: "Boss", icon: "💼", value: "Call me Boss" },
+                    { label: "My name", icon: "✨", value: "__NAME_INPUT__" },
                   ].map((option, index) => (
                     <motion.button
                       key={option.label}
@@ -392,10 +428,17 @@ export default function ChatContainer() {
                         bg-gradient-to-br from-aura-gold/5 to-aura-emerald/5
                         hover:from-aura-gold/15 hover:to-aura-emerald/15
                         transition-all duration-200"
-                      onClick={() => handleQuickAction(option.value)}
+                      onClick={() => {
+                        if (option.value === "__NAME_INPUT__") {
+                          setShowNameInput(true);
+                          setTimeout(() => nameInputRef.current?.focus(), 100);
+                        } else {
+                          handleQuickAction(option.value);
+                        }
+                      }}
                       initial={{ opacity: 0, scale: 0.9, y: 6 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ delay: 0.5 + index * 0.06, type: "spring", damping: 20, stiffness: 300 }}
+                      transition={{ delay: 0.5 + index * 0.04, type: "spring", damping: 20, stiffness: 300 }}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.96 }}
                     >
@@ -404,6 +447,56 @@ export default function ChatContainer() {
                     </motion.button>
                   ))}
                 </div>
+
+                {/* Name input — appears when "My name" chip is clicked */}
+                <AnimatePresence>
+                  {showNameInput && (
+                    <motion.div
+                      className="mt-4 flex items-center justify-center gap-2"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <input
+                        ref={nameInputRef}
+                        type="text"
+                        placeholder="Enter your name"
+                        value={nameInputValue}
+                        onChange={(e) => setNameInputValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && nameInputValue.trim()) {
+                            setAddressingMode("name", nameInputValue.trim());
+                            handleQuickAction(`Call me by my name. My name is ${nameInputValue.trim()}`);
+                            setShowNameInput(false);
+                            setNameInputValue("");
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl border border-aura-gold/40 bg-white/80 dark:bg-gray-800/80
+                          text-gray-800 dark:text-gray-200 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-aura-gold/50
+                          placeholder:text-gray-400 w-48"
+                        maxLength={30}
+                      />
+                      <motion.button
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-aura-gold to-aura-halo
+                          text-white text-sm font-medium shadow-sm
+                          hover:shadow-md transition-shadow"
+                        onClick={() => {
+                          if (nameInputValue.trim()) {
+                            setAddressingMode("name", nameInputValue.trim());
+                            handleQuickAction(`Call me by my name. My name is ${nameInputValue.trim()}`);
+                            setShowNameInput(false);
+                            setNameInputValue("");
+                          }
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Go
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Quick actions */}
@@ -428,6 +521,34 @@ export default function ChatContainer() {
                 <span className="text-aura-gold">×</span>
                 <span className="font-bold text-aura-emerald dark:text-aura-leaf">AI</span>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Returning user greeting */}
+        <AnimatePresence>
+          {returningGreeting && messages.length === 0 && (
+            <motion.div
+              className="max-w-3xl mx-auto mb-4"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="glass-card rounded-2xl px-6 py-5 text-center">
+                <div className="flex justify-center mb-3">
+                  <AuraAvatar state="celebrating" size={64} />
+                </div>
+                <h3 className="text-xl font-bold gradient-text mb-1">
+                  {returningGreeting}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  What can I help you find today?
+                </p>
+                <div className="mt-4">
+                  <QuickActionChips onAction={handleQuickAction} />
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
