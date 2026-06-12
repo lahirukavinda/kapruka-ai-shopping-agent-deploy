@@ -137,17 +137,42 @@ export default function ProductDetail({ product, onClose }: ProductDetailProps) 
 
             {/* Details */}
             <div className="p-5">
-              {product.category && (
-                <span className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide">
-                  {product.category}
+              <div className="flex items-center gap-2 flex-wrap">
+                {product.category && (
+                  <span className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide
+                    bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">
+                    {product.category}
+                  </span>
+                )}
+                <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                  !product.inStock
+                    ? "text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400"
+                    : product.stockLevel === "low"
+                      ? "text-amber-600 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400"
+                      : "text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400"
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    !product.inStock ? "bg-red-500" : product.stockLevel === "low" ? "bg-amber-500" : "bg-green-500"
+                  }`} />
+                  {!product.inStock ? "Out of Stock" : product.stockLevel === "low" ? "Low Stock" : "In Stock"}
                 </span>
-              )}
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {product.name}
               </h2>
-              <p className="text-2xl font-bold text-primary-800 dark:text-primary-400 mt-2">
-                {product.currency} {product.price.toLocaleString()}
-              </p>
+              <div className="flex items-baseline gap-3 mt-2">
+                <p className="text-2xl font-bold text-primary-800 dark:text-primary-400">
+                  {product.currency} {product.price.toLocaleString()}
+                </p>
+                {product.rating != null && product.rating > 0 && (
+                  <span className="inline-flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 font-medium">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {product.rating.toFixed(1)}
+                  </span>
+                )}
+              </div>
 
               {product.description && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
