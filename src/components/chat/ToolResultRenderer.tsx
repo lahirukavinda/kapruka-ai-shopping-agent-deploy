@@ -168,12 +168,27 @@ function parseOrder(data: unknown): OrderResult | null {
           price: Number(it.price || 0),
         }))
       : [];
+    const checkoutUrl = parsed.checkout_url || parsed.checkoutUrl;
+    const orderRef = parsed.order_ref || parsed.orderRef;
+    const summaryRaw = parsed.summary as Record<string, unknown> | undefined;
+    const summary = summaryRaw
+      ? {
+          items_total: Number(summaryRaw.items_total || 0),
+          delivery_fee: Number(summaryRaw.delivery_fee || 0),
+          addons_total: Number(summaryRaw.addons_total || 0),
+          grand_total: Number(summaryRaw.grand_total || 0),
+          currency: String(summaryRaw.currency || "LKR"),
+        }
+      : undefined;
     return {
       orderId: String(parsed.order_id || parsed.orderId || ""),
+      orderRef: orderRef ? String(orderRef) : undefined,
       payUrl: String(parsed.pay_url || parsed.payUrl || ""),
+      checkoutUrl: checkoutUrl ? String(checkoutUrl) : undefined,
       total: Number(parsed.total || 0),
       currency: (String(parsed.currency || "LKR")) as "LKR" | "USD",
       items,
+      summary,
       expiresAt: String(parsed.expires_at || parsed.expiresAt || new Date(Date.now() + 3600000).toISOString()),
     };
   } catch {

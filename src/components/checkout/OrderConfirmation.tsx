@@ -109,15 +109,43 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
           <span className="font-medium">Order ID</span>
           <span className="font-mono text-green-700 dark:text-green-300">{order.orderId}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Total</span>
-          <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
-            {order.currency} {order.total.toLocaleString()}
-          </span>
-        </div>
+        {order.orderRef && (
+          <div className="flex justify-between">
+            <span className="font-medium">Reference</span>
+            <span className="font-mono text-green-700 dark:text-green-300">{order.orderRef}</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span className="font-medium">Items</span>
           <span>{order.items.length} item{order.items.length !== 1 ? "s" : ""}</span>
+        </div>
+        {order.summary && (
+          <>
+            <div className="border-t border-green-200 dark:border-green-800 pt-2 mt-2 space-y-1">
+              <div className="flex justify-between text-xs">
+                <span>Subtotal</span>
+                <span>{order.summary.currency} {order.summary.items_total.toLocaleString()}</span>
+              </div>
+              {order.summary.delivery_fee > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span>Delivery</span>
+                  <span>{order.summary.currency} {order.summary.delivery_fee.toLocaleString()}</span>
+                </div>
+              )}
+              {order.summary.addons_total > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span>Add-ons</span>
+                  <span>{order.summary.currency} {order.summary.addons_total.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        <div className="flex justify-between pt-1 border-t border-green-200 dark:border-green-800">
+          <span className="font-semibold">Total</span>
+          <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
+            {order.currency} {order.total.toLocaleString()}
+          </span>
         </div>
       </div>
 
@@ -137,23 +165,23 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
         }
       </div>
 
-      {/* Pay button */}
+      {/* Pay button — prominent CTA */}
       <a
         href={order.checkoutUrl || order.payUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl
-          font-semibold text-white text-base shadow-lg transition-all
+        className={`mt-4 flex items-center justify-center gap-2.5 w-full py-4 rounded-xl
+          font-bold text-white text-lg tracking-wide transition-all
           ${expired
             ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed pointer-events-none"
-            : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/25"
+            : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-xl shadow-green-500/30 hover:shadow-green-500/50 hover:scale-[1.02] active:scale-[0.98]"
           }`}
         aria-disabled={expired}
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
         </svg>
-        Pay Now
+        {expired ? "Link Expired" : "Complete Payment →"}
       </a>
     </motion.div>
   );
