@@ -6,6 +6,9 @@ Manual and automated test cases for verifying language detection, emotional supp
 
 - **Unit tests:** `src/__tests__/detectLanguage.test.ts` — 24 automated tests for `detectLanguage()`
 - **Unit tests:** `src/__tests__/orchestrator.test.ts` — Intent classification tests
+- **Unit tests:** `src/__tests__/cacheManager.test.ts` — Cache manager utility (TTL, stale-while-revalidate, corrupted data)
+- **Unit tests:** `src/__tests__/userPrefsCache.test.ts` — User preferences, addressing modes (all 13), returning user greeting
+- **Unit tests:** `src/__tests__/categoriesCache.test.ts` — Categories cache (24h TTL, stale-while-revalidate)
 - **Live deployment:** https://aura-kapruka.vercel.app/
 - **Run all tests:** `npm run test`
 
@@ -60,6 +63,23 @@ Manual and automated test cases for verifying language detection, emotional supp
 | Click "Machan" chip | Sends "Call me Machan", Aura uses casual male slang |
 | Click "Sis" chip | Sends "Call me Sis", Aura uses female-appropriate slang only |
 | Click "Just my name" chip | Sends "Call me by my name", Aura asks for name |
+| Click "Aiya" chip | Sends "Call me Aiya", Aura responds with "Aiya" addressing |
+| Click "Akka" chip | Sends "Call me Akka", Aura responds with "Akka" addressing |
+| Click "Nangi" chip | Sends "Call me Nangi", Aura responds with "Nangi" addressing |
+| Click "Malli" chip | Sends "Call me Malli", Aura responds with "Malli" addressing |
+| Click "Uncle" chip | Sends "Call me Uncle", Aura responds with "Uncle" addressing |
+| Click "Aunty" chip | Sends "Call me Aunty", Aura responds with "Aunty" addressing |
+| Click "Boss" chip | Sends "Call me Boss", Aura responds with "Boss" addressing |
+| Click "My name" chip | Name input field appears, enter name → "Call me by my name. My name is {name}" sent |
+
+### Name Input Flow
+
+| Step | Expected |
+|------|----------|
+| Click "My name" chip | Inline text input field appears with "Enter your name" placeholder |
+| Type name + press Enter or click "Go" | Message "Call me by my name. My name is {name}" sent to LLM |
+| Name cached | `aura_user_prefs.name` set in localStorage |
+| Return visit | Greeting shows "Welcome back, {name}!" |
 
 ### Gender-Aware Slang Rules
 
@@ -195,7 +215,76 @@ Sir/Madam users expect FORMAL English by default — NO Sinhala slang.
 
 ---
 
-## 8. Running Tests
+## 8. Caching Layer (Automated: `cacheManager.test.ts`, `userPrefsCache.test.ts`, `categoriesCache.test.ts`)
+
+### Cache Manager (`src/lib/cache/cacheManager.ts`)
+
+| Test Case | Expected |
+|-----------|----------|
+| `setCache` + `getCache` within TTL | Returns stored data |
+| `getCache` past TTL | Returns null |
+| `invalidateCache` | Removes entry from localStorage |
+| `isCacheStale` within TTL | Returns false |
+| `isCacheStale` past TTL | Returns true |
+| `getCacheStale` past TTL | Returns data (ignores TTL) |
+| Corrupted JSON in localStorage | Returns null gracefully (no throw) |
+| `{data, timestamp}` JSON structure | Entries stored with data payload and numeric timestamp |
+
+### User Preferences Cache (`src/lib/cache/userPrefsCache.ts`)
+
+| Test Case | Expected |
+|-----------|----------|
+| Store and retrieve prefs | `getUserPrefs()` returns `{addressingMode, preferredLanguage, lastVisit}` |
+| Prefs persisted under `aura_user_prefs` key | `localStorage.getItem('aura_user_prefs')` contains JSON |
+| Optional name field | When `addressingMode: "name"`, `name` field stored and retrievable |
+| `updateUserPrefs` partial update | Updates only specified fields, preserves others |
+| `clearUserPrefs` | Removes `aura_user_prefs` from localStorage |
+| `detectAddressingMode` — all 13 modes | Detects sir, madam, bro, machan, sis, aiya, akka, nangi, malli, uncle, aunty, boss, name |
+| `detectAddressingMode` — case insensitive | "call me sir", "CALL ME BRO", "Call Me Aiya" all detected |
+| `detectAddressingMode` — unrecognized | Returns null for non-matching messages |
+| `getAddressingLabel` | Capitalizes mode; returns user name for "name" mode |
+| `getReturningGreeting` | "Welcome back, Sir!" / "Welcome back, Lahiru!" |
+
+### Categories Cache (`src/lib/cache/categoriesCache.ts`)
+
+| Test Case | Expected |
+|-----------|----------|
+| Store and retrieve within 24h | `getCachedCategories()` returns categories array |
+| Retrieve past 24h | `getCachedCategories()` returns null |
+| `getStaleCategories` past 24h | Returns categories (stale-while-revalidate) |
+| `areCategoriesStale` fresh | Returns false |
+| `areCategoriesStale` past 24h | Returns true |
+| `getCategoriesWithStaleness` fresh | `{categories, needsRefresh: false}` |
+| `getCategoriesWithStaleness` stale | `{categories, needsRefresh: true}` |
+| `getCategoriesWithStaleness` empty | `{categories: null, needsRefresh: true}` |
+
+---
+
+## 9. Cart Persistence & E2E Workflow (Manual)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Cart add | Search products → click "Add to Cart" | Cart badge increments, item in `aura-cart` localStorage |
+| Cart survives refresh | Add item → refresh page | Cart badge still shows count, items preserved |
+| Cart localStorage structure | Check `aura-cart` key | `{items: [{productId, name, price, currency, quantity, imageUrl}], deliveryCity, giftMessage}` |
+| Returning user + cart | Set prefs → add to cart → reload | Welcome greeting shown, cart preserved |
+| Full E2E workflow | 1. Select addressing mode → 2. Search products → 3. Add to cart → 4. Check delivery → 5. Reload | All state persisted: prefs cached, cart items preserved, delivery response rendered |
+
+---
+
+## 10. Returning User Flow (Manual)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| First visit | Clear localStorage → load page | Welcome screen with "Ayubowan!" and 13 addressing chips |
+| Set preference | Click any addressing chip | Message sent, prefs cached in `aura_user_prefs` |
+| Return visit | Reload page with prefs cached | Welcome screen hidden, "Welcome back, {label}!" greeting shown |
+| No dual display | Return visit after fix | Only greeting card visible, NOT both welcome + greeting |
+| Name mode return | Set "My name" + enter name → reload | "Welcome back, {name}!" greeting |
+
+---
+
+## 11. Running Tests
 
 ```bash
 # All tests (unit + integration)
@@ -207,6 +296,15 @@ npx vitest run src/__tests__/detectLanguage.test.ts
 # Just orchestrator (intent classification)
 npx vitest run src/__tests__/orchestrator.test.ts
 
+# Cache manager tests
+npx vitest run src/__tests__/cacheManager.test.ts
+
+# User preferences cache tests
+npx vitest run src/__tests__/userPrefsCache.test.ts
+
+# Categories cache tests
+npx vitest run src/__tests__/categoriesCache.test.ts
+
 # TypeScript check
 npx tsc --noEmit
 
@@ -216,7 +314,7 @@ npm run lint
 
 ---
 
-## 9. Adding New Test Cases
+## 12. Adding New Test Cases
 
 When adding new Sinhala words or emotional patterns:
 
@@ -229,3 +327,10 @@ When adding new emotional keywords:
 1. Add the keyword to `EMOTIONAL_PATTERNS` in `src/lib/agents/orchestrator.ts`
 2. Add a test case in `src/__tests__/orchestrator.test.ts`
 3. Add the expected behavior to this document
+
+When adding new addressing modes:
+1. Add the mode to `AddressingMode` type in `src/lib/cache/userPrefsCache.ts`
+2. Add a detection regex pattern in `detectAddressingMode()`
+3. Add the chip button in `src/components/chat/ChatContainer.tsx`
+4. Add test cases in `src/__tests__/userPrefsCache.test.ts`
+5. Add the expected behavior to this document
