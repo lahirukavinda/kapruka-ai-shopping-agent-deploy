@@ -73,17 +73,24 @@ Manual and automated test cases for verifying language detection, emotional supp
 ## 3. Emotional Support Agent (Manual)
 
 ### "Aiyo" Usage Rule
-**"Aiyo" is ONLY for frustration, disappointment, or loss.** Never for excitement, curiosity, or positive situations.
+**"Aiyo" is ONLY for the USER'S OWN genuine emotional pain/grief.** Never for:
+- Third-party positive news (e.g., "eya promote una" = she got promoted)
+- Promotions, achievements, celebrations
+- Search/technical errors
+- Excitement, curiosity, or positive contexts
 
 | Input | Expected "Aiyo"? | Expected Response |
 |-------|------------------|-------------------|
-| `my girlfriend broke up with me` | Yes (sadness) | "Aiyo... that's rough" + empathy |
-| `I got promoted!` | No | "Maru!" / "Shaa!" + celebration |
-| `I need a birthday gift` | No | "Shaa! Who's the lucky one?" |
-| `mata dukai` (I'm sad) | Yes (sadness) | "Aiyo..." + Sinhala empathy |
+| `my girlfriend broke up with me` | Yes (own sadness) | "Aiyo... that's rough" + empathy |
+| `I got promoted!` | No | "Maru!" / "Congratulations!" + celebration |
+| `eya promote una` (she got promoted) | No | "Congratulations!" / "That's wonderful!" — positive tone |
+| `I need a birthday gift` | No | "Who's the lucky one?" |
+| `mata dukai` (I'm sad) | Yes (own sadness) | "Aiyo..." + Sinhala empathy |
 | `I just got engaged!` | No | "MARU!" + congratulations |
 | `work is stressing me out` | No | "That sounds tough" + empathy |
-| `my dog died` | Yes (loss) | "Aiyo..." + condolences |
+| `my dog died` | Yes (own loss) | "Aiyo..." + condolences |
+| `job promotion` | No | "Congratulations!" / "Niyamai!" — NO "Aiyo" |
+| Search failed / API error | No | "Hmm, let me try again" — NO "Aiyo" |
 
 ### "Shaa!" Usage Rule
 **"Shaa!" is ONLY for excitement, celebration, or wow moments.** NEVER for sad, stressed, or difficult situations.
@@ -131,11 +138,30 @@ These should trigger the `emotional` intent (NOT shopping):
 
 ---
 
-## 4. Shopping Flow (Manual — No Regressions)
+## 4. Gift Suggestion Format (Manual)
+
+When suggesting gift categories or product types, the response MUST:
+- Format as a clear bullet/numbered list with emojis
+- These MUST render as clickable action chips below the message
+
+| Input | Expected Format | Expected Chips |
+|-------|----------------|---------------|
+| `job promotion, I want to get a gift` | Emoji bullet list | Clickable buttons (e.g., "🎁 Gift hampers", "🍫 Chocolates", "💐 Flowers", "🎂 Cakes") |
+| `I want a gift for my friend` | Emoji bullet list | Clickable category chips |
+| `what can I buy for amma?` | Emoji bullet list | Clickable category chips |
+
+**NOT acceptable:** Embedding suggestions inline in prose (e.g., "You could try flowers, cakes, or chocolates")
+
+---
+
+## 5. Shopping Flow (Manual — No Regressions)
 
 | Test Case | Steps | Expected |
 |-----------|-------|----------|
 | Product search | Type "show me birthday cakes under 5000 LKR" | Product cards with images, prices, buttons |
+| Product carousel (mobile) | Search products on mobile viewport | Cards visible, horizontally scrollable, no blank area |
+| Context actions (search) | After search results appear | Chips: "Add to Cart", "Find Similar", "Compare Options" |
+| Context actions (product select) | Click "Details" on a product | Chips: "Add to Cart", "Find Similar", "Continue Delivery" |
 | Add to cart | Click "Add to Cart" on a product | Cart count increases |
 | Category browse | Click "Browse categories" chip | Category tiles appear at top. NO duplicated category buttons at bottom |
 | Delivery check | Ask "can you deliver to Colombo?" | Logistics response |
@@ -144,7 +170,32 @@ These should trigger the `emotional` intent (NOT shopping):
 
 ---
 
-## 5. Running Tests
+## 6. Sir/Madam Formal Language (Manual)
+
+Sir/Madam users expect FORMAL English by default — NO Sinhala slang.
+
+| Input (as Sir/Madam) | Expected | NOT Expected |
+|---------------------|----------|-------------|
+| Click "Sir" chip | "Good day, Sir. Welcome — how can I help you today?" | "Ela!", "Machan", "Shaa!" or any casual slang |
+| `show me phones` | Professional English product listing | Sinhala slang mixed in |
+| `eya promote una` | "That's wonderful! Congratulations!" (English) | "Aiyo...", "Maru!" or Sinhala expressions |
+
+**Exception:** Sinhala expressions ARE allowed when the conversation switches to Sinhala mode (user types in pure Sinhala/Singlish and language is detected as `si` or `tanglish`).
+
+---
+
+## 7. UI / Visual (Manual)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Background scroll (light) | Scroll conversation to the very bottom | Background gradient continues smoothly — NO hard cutoff or color boundary |
+| Background scroll (dark) | Switch to dark mode, scroll to bottom | Deep purple gradient fills entire area — NO plain black sections |
+| Golden tree visible | Load welcome screen | Golden tree watermark visible in background (subtle) |
+| Mobile product carousel | Search on mobile | Products render as swipeable cards with proper widths |
+
+---
+
+## 8. Running Tests
 
 ```bash
 # All tests (unit + integration)
@@ -165,7 +216,7 @@ npm run lint
 
 ---
 
-## 6. Adding New Test Cases
+## 9. Adding New Test Cases
 
 When adding new Sinhala words or emotional patterns:
 
