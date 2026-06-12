@@ -117,14 +117,29 @@ export default function ChatContainer() {
       .filter((m) => m.role === "assistant")
       .flatMap((m) => m.toolInvocations ?? []);
 
+    // Check if cart has items for checkout-related chips
+    const cartHasItems = cartState.items.length > 0;
+
+    const hasDeliveryCheck = recentAssistantTools.some(
+      (inv) => inv.toolName === "kapruka_check_delivery"
+    );
+    if (hasDeliveryCheck && cartHasItems) {
+      return [
+        { label: "Proceed to checkout", icon: "💳", text: "I want to proceed to checkout" },
+        { label: "Keep browsing", icon: "🛍️", text: "I want to keep browsing" },
+        { label: "Check another city", icon: "📍", text: "Check delivery to another city" },
+      ];
+    }
+
     const hasSelectedProduct = recentAssistantTools.some(
       (inv) => inv.toolName === "kapruka_get_product"
     );
     if (hasSelectedProduct) {
       return [
         { label: "Add to Cart", icon: "🛒", text: "Add this product to my cart" },
-        { label: "Find Similar", icon: "🔎", text: "Find more similar items" },
-        { label: "Continue Delivery", icon: "📦", text: "Continue to delivery details" },
+        { label: "Check delivery", icon: "🚚", text: "Check delivery availability to my area" },
+        { label: "Find Similar", icon: "🔎", text: "Show me similar items" },
+        { label: "Show cheaper options", icon: "💰", text: "Show me cheaper options" },
       ];
     }
 
@@ -133,9 +148,10 @@ export default function ChatContainer() {
     );
     if (hasSearchResults) {
       return [
-        { label: "Add to Cart", icon: "🛒", text: "Add the selected product to my cart" },
-        { label: "Find Similar", icon: "🔎", text: "Find more similar items" },
-        { label: "Compare Options", icon: "⚖️", text: "Compare the best options" },
+        { label: "Add my favorite to cart", icon: "🛒", text: "Add your top recommendation to my cart" },
+        { label: "Compare Options", icon: "⚖️", text: "Compare the best options side by side" },
+        { label: "Check delivery", icon: "🚚", text: "Check delivery availability to my area" },
+        { label: "Show cheaper options", icon: "💰", text: "Show me cheaper alternatives" },
       ];
     }
 
@@ -147,7 +163,7 @@ export default function ChatContainer() {
     if (!lastAssistant?.content) return undefined;
     const parsed = parseResponseActions(lastAssistant.content);
     return parsed.length > 0 ? parsed : undefined;
-  }, [messages]);
+  }, [messages, cartState.items.length]);
 
   // Auto-retry countdown for rate limit errors
   useEffect(() => {

@@ -17,7 +17,7 @@ interface QuickActionChipsProps {
 const defaultActions: DynamicAction[] = [
   { label: "Browse categories", icon: "🛍️", text: "Show me all categories" },
   { label: "Track order", icon: "📦", text: "I want to track my order" },
-  { label: "Gift ideas", icon: "🎁", text: "I need gift ideas for a birthday" },
+  { label: "Help me find a gift", icon: "🎁", text: "I need help finding a gift" },
   { label: "Electronics", icon: "📱", text: "Show me popular electronics" },
   { label: "Groceries", icon: "🛒", text: "I need to buy groceries" },
 ];
