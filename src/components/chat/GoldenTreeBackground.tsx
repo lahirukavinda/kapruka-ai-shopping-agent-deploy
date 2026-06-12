@@ -17,7 +17,7 @@ const leaves = Array.from({ length: LEAF_COUNT }, (_, i) => ({
 function GoldenTreeBackground() {
   return (
     <div
-      className="absolute inset-0 pointer-events-none overflow-hidden"
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0"
       aria-hidden="true"
     >
       {/* Warm golden ambient glow */}

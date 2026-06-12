@@ -52,15 +52,19 @@ body {
 
 /* ─── Chat area gradient background — smooth ambient ─── */
 .chat-bg {
-  background:
+  background-color: var(--gradient-end);
+  background-image:
     radial-gradient(ellipse 80% 40% at 50% 95%, rgba(212,160,23,0.04) 0%, transparent 70%),
-    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 100%);
+    linear-gradient(180deg, var(--gradient-start) 0%, var(--gradient-end) 50%);
+  background-attachment: fixed;
 }
 
 .dark .chat-bg {
-  background:
+  background-color: var(--gradient-end);
+  background-image:
     radial-gradient(ellipse 80% 40% at 50% 95%, rgba(255,215,0,0.02) 0%, transparent 70%),
-    linear-gradient(180deg, var(--gradient-start) 0%, var(--background) 100%);
+    linear-gradient(180deg, var(--gradient-start) 0%, var(--gradient-end) 50%);
+  background-attachment: fixed;
 }
 
 /* ─── Premium glass-morphism header ─── */

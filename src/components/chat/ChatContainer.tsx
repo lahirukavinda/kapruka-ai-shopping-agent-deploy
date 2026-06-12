@@ -251,7 +251,7 @@ export default function ChatContainer() {
 
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin chat-bg relative"
+        className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin chat-bg relative z-10"
         role="log"
         aria-label="Chat conversation"
         aria-live="polite"
