@@ -64,9 +64,10 @@ export default function ChatContainer() {
   );
   const [returningGreeting, setReturningGreeting] = useState<string | null>(null);
 
-  // Show personalized greeting for returning users
+  // Hide welcome screen and show personalized greeting for returning users
   useEffect(() => {
     if (isReturningUser && userPrefs) {
+      setShowWelcome(false);
       setReturningGreeting(getReturningGreeting(userPrefs));
     }
   }, [isReturningUser, userPrefs]);
