@@ -57,7 +57,7 @@ export default function ProductCard({
 
   return (
     <motion.div
-      className="product-card rounded-2xl bg-white dark:bg-gray-800/80 overflow-hidden shadow-sm min-w-[220px] max-w-[280px] border border-gray-100 dark:border-gray-700/50"
+      className="product-card rounded-2xl bg-white dark:bg-gray-800/80 overflow-hidden shadow-sm w-full border border-gray-100 dark:border-gray-700/50"
       role="article"
       aria-label={`${product.name}, ${product.currency} ${product.price.toLocaleString()}, ${getStockLabel(product)}`}
       whileHover={{ y: -4 }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
 import type { Product } from "@/types";
@@ -35,7 +35,7 @@ export default function ProductCarousel({
 }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScroll = () => {
     if (!scrollRef.current) return;
@@ -53,6 +53,16 @@ export default function ProductCarousel({
     });
     setTimeout(checkScroll, 300);
   };
+
+  useEffect(() => {
+    checkScroll();
+    const current = scrollRef.current;
+    if (!current) return;
+
+    const resizeObserver = new ResizeObserver(checkScroll);
+    resizeObserver.observe(current);
+    return () => resizeObserver.disconnect();
+  }, [products.length]);
 
   if (products.length === 0) return null;
 
@@ -84,20 +94,17 @@ export default function ProductCarousel({
 
         <motion.div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin pb-2 px-0.5"
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin pb-2 px-0.5 overscroll-x-contain"
           variants={cardContainerVariants}
           initial="hidden"
           animate="visible"
           onScroll={checkScroll}
-          drag="x"
-          dragConstraints={{ left: -((products.length - 1) * 240), right: 0 }}
-          dragElastic={0.1}
         >
           {products.map((product) => (
             <motion.div
               key={product.id}
               variants={cardItemVariants}
-              className="snap-center flex-shrink-0"
+              className="snap-center flex-shrink-0 w-[min(78vw,280px)]"
             >
               <ProductCard product={product} onViewDetails={onViewDetails} />
             </motion.div>
@@ -105,7 +112,7 @@ export default function ProductCarousel({
         </motion.div>
 
         {/* Right arrow */}
-        {canScrollRight && products.length > 2 && (
+        {canScrollRight && products.length > 1 && (
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 touch-target

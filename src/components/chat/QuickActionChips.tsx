@@ -11,7 +11,7 @@ interface DynamicAction {
 interface QuickActionChipsProps {
   onAction: (text: string) => void;
   disabled?: boolean;
-  dynamicActions?: DynamicAction[];
+  dynamicActions?: DynamicAction[] | null;
 }
 
 const defaultActions: DynamicAction[] = [
@@ -27,7 +27,9 @@ export default function QuickActionChips({
   disabled = false,
   dynamicActions,
 }: QuickActionChipsProps) {
-  const actions = dynamicActions && dynamicActions.length > 0 ? dynamicActions : defaultActions;
+  if (dynamicActions && dynamicActions.length === 0) return null;
+
+  const actions = dynamicActions ? dynamicActions : defaultActions;
 
   return (
     <div className="flex flex-wrap justify-center gap-2.5 px-4 py-2">

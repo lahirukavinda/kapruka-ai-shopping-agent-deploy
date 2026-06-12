@@ -93,16 +93,41 @@ export default function ChatContainer() {
   // Skip if any recent message has tool-rendered category tiles to avoid duplication
   const dynamicActions = useMemo(() => {
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
-    if (!lastAssistant?.content) return undefined;
-    // Check if ANY recent assistant message has category tool invocations
+    // Check if ANY recent assistant message has tool invocations
     // (with maxSteps, tool calls and text may be on different messages)
     const recentMessages = messages.slice(-5);
-    const hasCategories = recentMessages.some(
-      (m) => m.role === "assistant" && m.toolInvocations?.some(
-        (inv) => inv.toolName === "kapruka_list_categories"
-      )
+    const recentAssistantTools = recentMessages
+      .filter((m) => m.role === "assistant")
+      .flatMap((m) => m.toolInvocations ?? []);
+
+    const hasSelectedProduct = recentAssistantTools.some(
+      (inv) => inv.toolName === "kapruka_get_product"
     );
-    if (hasCategories) return undefined;
+    if (hasSelectedProduct) {
+      return [
+        { label: "Add to Cart", icon: "🛒", text: "Add this product to my cart" },
+        { label: "Find Similar", icon: "🔎", text: "Find more similar items" },
+        { label: "Continue Delivery", icon: "📦", text: "Continue to delivery details" },
+      ];
+    }
+
+    const hasSearchResults = recentAssistantTools.some(
+      (inv) => inv.toolName === "kapruka_search_products"
+    );
+    if (hasSearchResults) {
+      return [
+        { label: "Add to Cart", icon: "🛒", text: "Add the selected product to my cart" },
+        { label: "Find Similar", icon: "🔎", text: "Find more similar items" },
+        { label: "Compare Options", icon: "⚖️", text: "Compare the best options" },
+      ];
+    }
+
+    const hasCategories = recentAssistantTools.some(
+      (inv) => inv.toolName === "kapruka_list_categories"
+    );
+    if (hasCategories) return [];
+
+    if (!lastAssistant?.content) return undefined;
     const parsed = parseResponseActions(lastAssistant.content);
     return parsed.length > 0 ? parsed : undefined;
   }, [messages]);
