@@ -242,24 +242,31 @@ export default function ToolResultRenderer({
   onSelectCity,
 }: ToolResultRendererProps) {
   if (isLoading) {
-    const label = toolName === "kapruka_list_categories"
-      ? "Loading categories..."
-      : toolName === "kapruka_track_order"
-      ? "Checking order status..."
-      : toolName === "kapruka_list_delivery_cities"
-      ? "Looking up cities..."
-      : "Searching products...";
+    const toolLabels: Record<string, { icon: string; label: string }> = {
+      kapruka_list_categories: { icon: "📦", label: "Loading categories..." },
+      kapruka_track_order: { icon: "📍", label: "Tracking your order..." },
+      kapruka_list_delivery_cities: { icon: "🗺️", label: "Looking up delivery cities..." },
+      kapruka_search_products: { icon: "🔍", label: "Searching Kapruka for the best products..." },
+      kapruka_get_product: { icon: "📋", label: "Fetching product details..." },
+      kapruka_check_delivery: { icon: "🚚", label: "Checking delivery availability..." },
+      kapruka_create_order: { icon: "📝", label: "Placing your order..." },
+    };
+    const { icon, label } = toolLabels[toolName] ?? { icon: "⚙️", label: "Working on it..." };
+    const showSkeleton = toolName === "kapruka_search_products" || toolName === "kapruka_get_product";
     return (
       <div className="ml-10 my-2">
-        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mb-2">
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">
           <span className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <span>{icon}</span>
           {label}
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {[1, 2, 3].map((i) => (
-            <ProductCardSkeleton key={i} />
-          ))}
-        </div>
+        {showSkeleton && (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[1, 2, 3].map((i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }

@@ -314,7 +314,96 @@ npm run lint
 
 ---
 
-## 12. Adding New Test Cases
+## 12. Judge Evaluation Test Cases (Manual — Full E2E from URL)
+
+These test cases simulate what a Kapruka competition judge would evaluate when opening https://aura-kapruka.vercel.app/.
+
+### First Impression (Experience & Polish — 30 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| First load | Open URL in incognito | "Ayubowan!" welcome screen with animated Aura avatar, floating golden particles |
+| 13 addressing chips | View welcome screen | All chips visible: Sir, Madam, Bro, Machan, Sis, Aiya, Akka, Nangi, Malli, Uncle, Aunty, Boss, My name |
+| Chip interaction | Click "Machan" | Message "Call me Machan" sent, warm Tanglish response ("Ela!") |
+| Name input flow | Click "My name" → type name → Go | Name cached, Aura greets by name |
+| Returning user | Reload after chip click | "Welcome back, {label}!" greeting, no duplicate welcome screen |
+| Dark mode toggle | Click 🌙 button | Full theme switch, product cards/chat bubbles render correctly |
+| Mobile responsive | Resize to mobile viewport | Layout adapts, product cards horizontally scrollable |
+| ThinkingDots animation | Send any message | Yellow bouncing dots appear for at least 1.2s |
+
+### Product Search & Visual Richness (Visual — 20 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Product search | Type "birthday cake under 5000" | Product cards with images, names, prices, Details/Add to Cart buttons |
+| Product carousel | View search results | Horizontal scrollable carousel with multiple product cards |
+| Low stock badge | View product cards | "Low Stock" indicator visible on applicable items |
+| Product detail | Click "Details" on product card | Product detail view with additional information |
+| Opinionated recommendation | View AI response after search | AI picks a favorite ("If I had to pick one, I'd recommend...") |
+
+### Personality & Language (Personality — 15 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Tanglish input | Type "machan mama girlfriend ta valentine gift ekak ganna one" | Response in Tanglish with Sri Lankan expressions |
+| Tanglish delivery | Ask about delivery in Tanglish | Delivery info in Tanglish ("Aiyo, machan! Kandy ta delivery karanna...") |
+| Sinhala script input | Type "මට birthday cake එකක් ඕනෙ" | Response includes Sinhala Unicode script |
+| Pure Sinhala input | Type "kohomada" | Response in Sinhala mode |
+| Sir/Madam formal | Select "Sir" → ask a question | Formal English, no Sinhala slang |
+| Bro/Machan casual | Select "Machan" → ask a question | Casual Tanglish with "Ela!", "Machan" etc. |
+| Contextual chips | After search results | Chips: "Add my favorite to cart", "Compare Options", "Check delivery", "Show cheaper options" |
+| Post-delivery chips | After delivery check | Chips: "Proceed to checkout", "Keep browsing", "Check another city" |
+
+### Cart & Checkout (E2E — 15 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Add to cart | Click "Add to Cart" on product card | Cart badge increments to 1 |
+| Cart panel | Click cart icon | Side panel with product image, name, price, quantity +/-, gift message |
+| Gift message | Open cart panel | Gift message textarea visible with placeholder |
+| Checkout Step 1 | Click "Proceed to Checkout" | Modal: "Checkout Step 1/3 — Order Summary" with item list and subtotal |
+| Checkout Step 2 | Click "Continue to Delivery" | Delivery details form |
+| Checkout Step 3 | Complete delivery → next | Confirm & Pay step |
+| Cart persistence | Add item → reload page | Cart badge still shows count |
+
+### Usefulness (15 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Budget filtering | "show me cakes under 3000" | Only products within budget returned |
+| Delivery check | "can you deliver to Colombo?" | Delivery card with city, cost, availability |
+| Gift guidance | "help me find a gift" | Guided flow: Who → Occasion → Budget |
+| Cross-sell | Add item to cart | AI suggests complementary product |
+| Compare options | Click "Compare Options" chip | AI compares top products |
+
+### Creativity (5 pts)
+
+| Test Case | Steps | Expected |
+|-----------|-------|----------|
+| Cultural addressing | 13 unique Sri Lankan modes | Aiya, Akka, Nangi, Malli, Uncle, Aunty, Boss + standard |
+| Voice input button | View input bar | Microphone icon present |
+| Chat history | Click clipboard icon | Previous sessions accessible |
+| Preference caching | Set mode → return later | Preferences remembered across sessions |
+
+---
+
+## 13. Sinhala Language Test Cases (Manual)
+
+| Input | Expected Language | Expected Response |
+|-------|------------------|-------------------|
+| `මට cake එකක් ඕනෙ` | `si` (Sinhala Unicode detected) | Sinhala Unicode response about cakes |
+| `මට birthday gift එකක් ඕනෙ` | `si` | Sinhala response with gift suggestions |
+| `කොහොමද` | `si` | Sinhala greeting response |
+| `මොකද ඕනෙ` | `si` | Sinhala asking what they need |
+| `bohoma isthuthi` | `si` | Sinhala "you're welcome" response |
+| `mama hondai` | `si` | Sinhala positive response |
+| `sinhalen kiyanna` | `si` | Switch to full Sinhala mode |
+| `ආයුබෝවන්` | `si` | Full Sinhala greeting response |
+| `මට phone එකක් ගන්න ඕනෙ budget eka 50000` | `tanglish` | Mix Sinhala + English |
+
+---
+
+## 14. Adding New Test Cases
 
 When adding new Sinhala words or emotional patterns:
 
