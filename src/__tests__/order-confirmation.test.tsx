@@ -57,9 +57,9 @@ describe("OrderConfirmation", () => {
     expect(screen.getByText(/2 items/)).toBeInTheDocument();
   });
 
-  it("renders Pay Now link with correct href", () => {
+  it("renders payment link with correct href", () => {
     render(<OrderConfirmation order={order} />);
-    const payLink = screen.getByText(/Pay Now/i);
+    const payLink = screen.getByText(/Complete Payment/i);
     expect(payLink.closest("a")).toHaveAttribute(
       "href",
       "https://pay.example.com/ORD-TEST-123"
