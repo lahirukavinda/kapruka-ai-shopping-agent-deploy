@@ -63,6 +63,8 @@ export default function ChatContainer() {
     userPrefs?.preferredLanguage ?? "en"
   );
   const [returningGreeting, setReturningGreeting] = useState<string | null>(null);
+  const [showThinking, setShowThinking] = useState(false);
+  const thinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hide welcome screen and show personalized greeting for returning users
   useEffect(() => {
@@ -95,9 +97,46 @@ export default function ChatContainer() {
 
   const avatarState = getAvatarState(isLoading, messages);
 
+  // Ensure ThinkingDots stays visible for at least 1.2s after loading starts
   useEffect(() => {
+    if (isLoading) {
+      setShowThinking(true);
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+      thinkingTimerRef.current = setTimeout(() => {
+        thinkingTimerRef.current = null;
+      }, 1200);
+    } else if (!thinkingTimerRef.current) {
+      setShowThinking(false);
+    }
+    return () => {
+      if (!isLoading && thinkingTimerRef.current) {
+        clearTimeout(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+        setShowThinking(false);
+      }
+    };
+  }, [isLoading]);
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading, scrollToBottom]);
+
+  // Re-scroll when carousels or tool results add height after render
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const observer = new MutationObserver(() => {
+      scrollToBottom();
+    });
+    const container = messagesEndRef.current?.parentElement;
+    if (container) {
+      observer.observe(container, { childList: true, subtree: true });
+    }
+    return () => observer.disconnect();
+  }, [messages.length, scrollToBottom]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -610,7 +649,7 @@ export default function ChatContainer() {
             </div>
           ))}
 
-          {isLoading && !messages[messages.length - 1]?.content && (
+          {showThinking && (isLoading || thinkingTimerRef.current) && (
             <div className="flex gap-2 items-center mb-3">
               <ThinkingDots />
             </div>
