@@ -573,7 +573,7 @@ export default function ChatContainer() {
                 transition={{ delay: 0.7 }}
               >
                 <span>Powered by</span>
-                <span className="font-bold gradient-text">Kapruka MCP</span>
+                <span className="font-bold gradient-text">Kapruka</span>
                 <span className="text-aura-gold">×</span>
                 <span className="font-bold text-aura-emerald dark:text-aura-leaf">AI</span>
               </motion.div>

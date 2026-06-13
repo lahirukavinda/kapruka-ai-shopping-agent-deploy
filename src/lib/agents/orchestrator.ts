@@ -9,6 +9,12 @@ type Intent = "shopping" | "logistics" | "order" | "emotional" | "general";
 // Rule-based intent patterns to avoid an LLM call for common queries
 const SHOPPING_PATTERNS =
   /\b(show me|search|find|browse|look for|products?|items?|cakes?|flowers?|chocolates?|gifts?|buy|shop|categories|catalog|compare|cheaper|expensive|price|similar|recommend|suggest)\b/i;
+// Sinhala/Tanglish shopping patterns — detect product requests in any language
+const SINHALA_SHOPPING_PATTERNS =
+  /\b(ganna|ganna one|one ekak|ekak one|ekak ganna|ගන්න|ඕනෙ|ඕන|ඕනෑ)\b.*\b(cake|phone|chocolate|gift|flower|laptop|saree|shirt|watch|toy|book|perfume|wine|grocery)\b|\b(cake|phone|chocolate|gift|flower|laptop|saree|shirt|watch|toy|book|perfume|wine|grocery)\b.*\b(ganna|ganna one|one ekak|ekak one|ekak ganna|ඕනෙ|ඕන|ඕනෑ|ගන්න)\b/i;
+// Sinhala Unicode product keywords
+const SINHALA_UNICODE_PRODUCT_PATTERNS =
+  /මට.*(?:cake|phone|chocolate|gift|flower|saree|shirt|watch|toy|book|perfume|wine|grocery|කේක්|චොකලට්|මල්|ඇඳුම්|සපත්තු|පොත්|සුවඳ විලවුන්)/i;
 const LOGISTICS_PATTERNS =
   /\b(deliver(y|ies)?|shipping|ship to|cities|city list|available.*(deliver|ship)|deliver.*(date|time|rate|cost|charge)|can you deliver|where.*(deliver|ship))\b/i;
 const ORDER_PATTERNS =
@@ -34,6 +40,9 @@ export function classifyIntentByRules(message: string): Intent | null {
   if (EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SL_EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SHOPPING_PATTERNS.test(trimmed)) return "shopping";
+  // Sinhala/Tanglish product requests (e.g., "මට cake එකක් ඕනෙ")
+  if (SINHALA_SHOPPING_PATTERNS.test(trimmed)) return "shopping";
+  if (SINHALA_UNICODE_PRODUCT_PATTERNS.test(trimmed)) return "shopping";
 
   return null; // uncertain -> fall back to LLM
 }

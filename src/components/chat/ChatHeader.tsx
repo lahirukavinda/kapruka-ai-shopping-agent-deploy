@@ -29,7 +29,7 @@ export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: C
         </div>
         <div>
           <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-aura-gold via-aura-halo to-aura-emerald bg-clip-text text-transparent">
-            {process.env.NEXT_PUBLIC_APP_NAME || "Aura ඕරා"}
+            {process.env.NEXT_PUBLIC_APP_NAME || "Aura ඔරා"}
           </h1>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-violet-400 shadow-sm shadow-violet-400/50 animate-pulse" />

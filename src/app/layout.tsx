@@ -14,9 +14,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Aura (ඕරා) — Your Kapruka Shopping Buddy",
+  title: "Aura (ඔරා) — Your Kapruka Shopping Buddy",
   description:
-    "Aura (ඕරා) — AI-powered conversational shopping companion from the divine Kapruka tree. Browse products, compare options, check delivery, and order — all through natural conversation.",
+    "Aura (ඔරා) — AI-powered conversational shopping companion from the divine Kapruka tree. Browse products, compare options, check delivery, and order — all through natural conversation.",
   keywords: ["Kapruka", "shopping", "AI", "Sri Lanka", "e-commerce"],
 };
 
