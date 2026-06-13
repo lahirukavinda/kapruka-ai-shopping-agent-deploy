@@ -238,12 +238,10 @@ export default function MessageBubble({
           isAssistant
             ? "assistant-bubble text-gray-800 dark:text-gray-100"
             : "user-bubble text-white shadow-lg"
-        }`}
+        } ${isStreaming ? "streaming-text" : ""}`}
       >
         {isAssistant ? renderMarkdown(content, onAction) : content}
-        {isStreaming && (
-          <span className="inline-block w-1.5 h-4 ml-0.5 bg-amber-500 dark:bg-amber-400 animate-pulse rounded-sm align-text-bottom" />
-        )}
+        {isStreaming && <span className="streaming-cursor" />}
       </div>
     </motion.div>
   );

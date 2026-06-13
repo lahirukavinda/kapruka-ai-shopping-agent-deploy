@@ -48,7 +48,7 @@ export default function ChatContainer() {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showWelcome, setShowWelcome] = useState(!isReturningUser);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showNameInput, setShowNameInput] = useState(false);

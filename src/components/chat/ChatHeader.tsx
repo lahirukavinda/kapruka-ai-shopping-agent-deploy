@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import AuraAvatar from "./AuraAvatar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCart } from "@/contexts/CartContext";
@@ -14,6 +15,11 @@ interface ChatHeaderProps {
 export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: ChatHeaderProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const { totalItems } = useCart();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   return (
     <header className="glass-header flex items-center justify-between px-4 py-3 z-20 relative">
@@ -52,7 +58,7 @@ export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: C
           className="header-btn touch-target w-10 h-10 flex items-center justify-center rounded-full text-lg"
           aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
         >
-          {theme === "light" ? "🌙" : "☀️"}
+          {hasMounted ? (theme === "light" ? "🌙" : "☀️") : "🌙"}
         </button>
 
         {/* Cart button */}
@@ -62,7 +68,7 @@ export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: C
           aria-label={`Cart with ${totalItems} items`}
         >
           🛒
-          {totalItems > 0 && (
+          {hasMounted && totalItems > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gradient-to-r from-aura-gold to-aura-emerald text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-900">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
