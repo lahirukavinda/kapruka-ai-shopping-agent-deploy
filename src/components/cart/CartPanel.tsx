@@ -164,7 +164,7 @@ function CartContent({
                   {item.currency} {(item.price * item.quantity).toLocaleString()}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-end gap-1.5">
                 <button
                   onClick={() =>
                     dispatch({
@@ -172,12 +172,14 @@ function CartContent({
                       payload: { productId: item.productId },
                     })
                   }
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400
+                    transition-colors px-1"
                   aria-label={`Remove ${item.name} from cart`}
                 >
                   ✕
                 </button>
-                <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded">
+                <div className="flex items-center gap-0.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                  bg-white dark:bg-gray-700 shadow-sm">
                   <button
                     onClick={() =>
                       dispatch({
@@ -188,12 +190,16 @@ function CartContent({
                         },
                       })
                     }
-                    className="w-6 h-6 flex items-center justify-center text-xs"
+                    className="w-7 h-7 flex items-center justify-center text-sm font-medium
+                      text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600
+                      rounded-l-lg transition-colors"
                     aria-label="Decrease quantity"
                   >
                     −
                   </button>
-                  <span className="text-xs w-5 text-center">{item.quantity}</span>
+                  <span className="text-xs w-6 text-center font-semibold text-gray-800 dark:text-gray-100">
+                    {item.quantity}
+                  </span>
                   <button
                     onClick={() =>
                       dispatch({
@@ -204,7 +210,9 @@ function CartContent({
                         },
                       })
                     }
-                    className="w-6 h-6 flex items-center justify-center text-xs"
+                    className="w-7 h-7 flex items-center justify-center text-sm font-medium
+                      text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600
+                      rounded-r-lg transition-colors"
                     aria-label="Increase quantity"
                   >
                     +
@@ -219,16 +227,21 @@ function CartContent({
       {/* Gift message */}
       {state.items.length > 0 && (
         <div className="px-4 pb-2">
-          <input
-            type="text"
-            placeholder="Add a gift message (optional)"
+          <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+            <span>🎁</span>
+            <span>Gift Message</span>
+          </label>
+          <textarea
+            placeholder="Write a personal message for the recipient..."
             value={state.giftMessage || ""}
             onChange={(e) =>
               dispatch({ type: "SET_GIFT_MESSAGE", payload: e.target.value || null })
             }
+            rows={2}
             className="w-full text-sm px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
               bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100
-              placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50
+              focus:border-aura-gold resize-none"
           />
         </div>
       )}
@@ -246,10 +259,12 @@ function CartContent({
           </div>
           <button
             onClick={onCheckout}
-            className="w-full touch-target py-3 rounded-xl font-medium text-white
-              bg-primary-500 hover:bg-primary-600 transition-colors"
+            className="w-full touch-target py-3 rounded-xl font-semibold text-white
+              bg-gradient-to-r from-aura-gold to-aura-emerald
+              hover:from-yellow-600 hover:to-violet-700
+              shadow-lg shadow-aura-gold/25 transition-all"
           >
-            Proceed to Checkout
+            Proceed to Checkout →
           </button>
         </div>
       )}

@@ -35,6 +35,12 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
   const reducedMotion = useReducedMotion();
 
   const [step, setStep] = useState<Step>(1);
+
+  // Reset step when checkout panel opens
+  useEffect(() => {
+    if (isOpen) setStep(1);
+  }, [isOpen]);
+
   const [deliveryCity, setDeliveryCity] = useState(state.deliveryCity || "");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -313,18 +319,32 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Delivery Date
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-aura-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Delivery Date
+                          </span>
                         </label>
                         <input
                           type="date"
                           value={deliveryDate}
-                          onChange={(e) => setDeliveryDate(e.target.value)}
+                          onChange={(e) => {
+                            const today = new Date().toISOString().split("T")[0];
+                            if (e.target.value >= today) {
+                              setDeliveryDate(e.target.value);
+                            }
+                          }}
                           min={new Date().toISOString().split("T")[0]}
                           required
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
+                            focus:outline-none focus:ring-2 focus:ring-aura-gold/50 focus:border-aura-gold
+                            [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                         />
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                          Earliest delivery: {(() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toLocaleDateString("en-LK", { weekday: "short", month: "short", day: "numeric" }); })()}
+                        </p>
                       </div>
 
                       <div>
@@ -344,17 +364,28 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Gift Message <span className="text-gray-400">(optional)</span>
+                          <span className="flex items-center gap-1.5">
+                            <span>🎁</span>
+                            Gift Message
+                            <span className="text-gray-400 font-normal">(optional)</span>
+                          </span>
                         </label>
-                        <input
-                          type="text"
+                        <textarea
                           value={giftMessage}
                           onChange={(e) => setGiftMessage(e.target.value)}
-                          placeholder="Happy Birthday! 🎂"
+                          placeholder="Write a heartfelt message for the recipient... 🎂"
+                          rows={2}
+                          maxLength={200}
                           className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50"
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-aura-gold/50
+                            focus:border-aura-gold resize-none"
                         />
+                        {giftMessage.length > 0 && (
+                          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 text-right">
+                            {giftMessage.length}/200
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -415,16 +446,35 @@ export default function CheckoutFlow({ isOpen, onClose, onPlaceOrder }: Checkout
                         <span className="text-gray-500 dark:text-gray-400">Phone</span>
                         <span className="text-gray-900 dark:text-gray-100">{recipientPhone}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400">Address</span>
+                        <span className="text-gray-900 dark:text-gray-100 text-right max-w-[60%]">{recipientAddress}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Date
+                        </span>
+                        <span className="text-gray-900 dark:text-gray-100">
+                          {new Date(deliveryDate + "T00:00:00").toLocaleDateString("en-LK", { weekday: "short", month: "short", day: "numeric" })}
+                        </span>
+                      </div>
                       {deliveryInfo?.rate && (
                         <div className="flex justify-between">
-                          <span className="text-gray-500 dark:text-gray-400">Delivery</span>
+                          <span className="text-gray-500 dark:text-gray-400">Delivery fee</span>
                           <span className="text-gray-900 dark:text-gray-100">LKR {deliveryInfo.rate.toLocaleString()}</span>
                         </div>
                       )}
                       {giftMessage && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500 dark:text-gray-400">Gift msg</span>
-                          <span className="text-gray-900 dark:text-gray-100 text-right max-w-[60%] truncate">{giftMessage}</span>
+                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-1">
+                            <span>🎁</span> Gift Message
+                          </span>
+                          <p className="text-gray-900 dark:text-gray-100 text-sm italic">
+                            &ldquo;{giftMessage}&rdquo;
+                          </p>
                         </div>
                       )}
                     </div>
