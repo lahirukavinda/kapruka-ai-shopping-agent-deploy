@@ -488,7 +488,61 @@ The AI should naturally weave in festival context when relevant.
 
 ---
 
-## 15. Adding New Test Cases
+## 15. Comparison & Indecision Handling (PR #26)
+
+When a user expresses indecision between brands/products, Aura should help with a comparison — NOT just dump two separate product lists.
+
+### Comparison Intent Detection (Automated: `orchestrator.test.ts`)
+
+| Input | Expected Intent | Notes |
+|-------|----------------|-------|
+| "apple da samsung da hithaganna ba mata phone" | shopping | Tanglish indecision pattern |
+| "iPhone vs Samsung which is better phone" | shopping | English comparison "vs" |
+| "can't decide between apple and samsung phone" | shopping | English indecision |
+| "compare iPhone and Samsung phone" | shopping | Explicit comparison |
+| "hithaganna bari apple samsung phone" | shopping | Tanglish "can't decide" |
+
+### Comparison Response Quality (Manual — Live App)
+
+| Input | Expected Behavior | NOT Expected |
+|-------|-------------------|--------------|
+| "apple da samsung da hithaganna ba mata" | Acknowledge dilemma → Ask clarifying questions (camera? battery? budget?) → Head-to-head comparison → Personal recommendation | Two separate product listings with no comparison or opinion |
+| "iPhone vs Samsung for photography" | Compare camera specs from actual products → Recommend one with reasoning | Generic product dump |
+| "mokada honda laptop ekak ganna" (which is good to buy a laptop) | Ask use case → Compare 2-3 options → Give opinion | Single product listing |
+
+### Indecision Tanglish/Sinhala Phrases
+
+| Phrase | Meaning | Should Trigger |
+|--------|---------|----------------|
+| "hithaganna ba" / "hithaganna bari" | Can't decide | Comparison mode |
+| "X da Y da" | X or Y? | Comparison mode |
+| "mokada honda" | Which is good? | Comparison mode |
+| "confused machan" | Confused, bro | Comparison mode |
+
+---
+
+## 16. UI Polish & Error Handling (PRs #24, #25)
+
+### MCP Error Resilience (PR #24)
+
+| Action | Expected | NOT Expected |
+|--------|----------|--------------|
+| Click "Browse categories" when MCP server is slow | Bot says "Service temporarily unavailable" or shows categories normally | "Something went wrong. Tap retry" crash |
+| Search products when MCP times out | Bot acknowledges the issue and asks to retry | Entire chat stream crashes |
+
+### Avatar & Indicator Colors (PR #25)
+
+| Element | Expected | NOT Expected |
+|---------|----------|--------------|
+| Online indicator dot (header) | Green (emerald-400) when idle/active | Violet or orange |
+| Online indicator dot (thinking) | Amber (amber-400) | Violet |
+| Avatar during tool calls | Gold/purple gradient matching branding | Orange |
+| Welcome text | "from Kapruka" | "from the Kapruka" |
+| Quick actions section | "Or jump right in:" intro text above chips | No intro text |
+
+---
+
+## 17. Adding New Test Cases
 
 When adding new Sinhala words or emotional patterns:
 

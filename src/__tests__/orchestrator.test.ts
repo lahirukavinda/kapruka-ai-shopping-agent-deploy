@@ -87,6 +87,20 @@ describe("classifyIntentByRules", () => {
     expect(classifyIntentByRules("gediya wedi")).toBe("emotional");
   });
 
+  it("detects comparison/indecision intent as shopping", () => {
+    expect(classifyIntentByRules("apple da samsung da hithaganna ba mata phone")).toBe("shopping");
+    expect(classifyIntentByRules("iPhone vs Samsung which is better phone")).toBe("shopping");
+    expect(classifyIntentByRules("can't decide between apple and samsung phone")).toBe("shopping");
+    expect(classifyIntentByRules("compare iPhone and Samsung phone")).toBe("shopping");
+    expect(classifyIntentByRules("which is better iPhone or Samsung phone")).toBe("shopping");
+    expect(classifyIntentByRules("hithaganna bari apple samsung phone")).toBe("shopping");
+  });
+
+  it("detects Sinhala Unicode product requests", () => {
+    expect(classifyIntentByRules("මට cake එකක් ඕනෙ")).toBe("shopping");
+    expect(classifyIntentByRules("chocolate ekak ganna one")).toBe("shopping");
+  });
+
   it("does NOT classify literal phone case as emotional", () => {
     // "phone case" has no relationship words nearby — should NOT match SL patterns
     expect(classifyIntentByRules("show me phone cases")).toBe("shopping");
