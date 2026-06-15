@@ -560,6 +560,12 @@ body {
   to { opacity: 1; }
 }
 
+/* ─── Lotus float animation ─── */
+@keyframes lotusFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(3deg); }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

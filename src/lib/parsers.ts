@@ -202,3 +202,11 @@ export function parseCities(data: unknown): City[] {
     return [];
   }
 }
+
+/**
+ * Format a price value in Sri Lankan Rupees.
+ * Displays as "Rs. X,XXX" which is the common Sri Lankan format.
+ */
+export function formatLKR(amount: number): string {
+  return `Rs. ${amount.toLocaleString("en-LK")}`;
+}

@@ -3,6 +3,7 @@
 import { memo } from "react";
 
 const LEAF_COUNT = 12;
+const LOTUS_COUNT = 5;
 
 const leaves = Array.from({ length: LEAF_COUNT }, (_, i) => ({
   id: i,
@@ -12,6 +13,16 @@ const leaves = Array.from({ length: LEAF_COUNT }, (_, i) => ({
   duration: `${6 + (i % 5) * 2}s`,
   rotation: (i * 47) % 360,
   drift: (i % 2 === 0 ? 1 : -1) * (20 + (i % 3) * 15),
+}));
+
+const lotusPositions = Array.from({ length: LOTUS_COUNT }, (_, i) => ({
+  id: i,
+  left: `${10 + ((i * 43 + 7) % 80)}%`,
+  top: `${15 + ((i * 31 + 11) % 60)}%`,
+  size: 24 + (i % 3) * 8,
+  delay: `${(i * 2.3) % 10}s`,
+  duration: `${12 + (i % 4) * 3}s`,
+  opacity: 0.04 + (i % 3) * 0.01,
 }));
 
 function GoldenTreeBackground() {
@@ -25,8 +36,9 @@ function GoldenTreeBackground() {
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 60% 50% at 50% 85%, rgba(212,160,23,0.08) 0%, transparent 70%),
-            radial-gradient(ellipse 40% 35% at 50% 40%, rgba(255,215,0,0.05) 0%, transparent 60%)
+            radial-gradient(ellipse 60% 50% at 50% 85%, rgba(212,160,23,0.10) 0%, transparent 70%),
+            radial-gradient(ellipse 40% 35% at 50% 40%, rgba(255,215,0,0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 30% 25% at 70% 30%, rgba(194,120,3,0.04) 0%, transparent 50%)
           `,
         }}
       />
@@ -167,6 +179,49 @@ function GoldenTreeBackground() {
             />
           </svg>
         </div>
+      ))}
+
+      {/* Subtle lotus flower motifs — Sri Lankan national flower */}
+      {lotusPositions.map((lotus) => (
+        <svg
+          key={`lotus-${lotus.id}`}
+          className="absolute pointer-events-none"
+          style={{
+            left: lotus.left,
+            top: lotus.top,
+            width: lotus.size,
+            height: lotus.size,
+            opacity: lotus.opacity,
+            animation: `lotusFloat ${lotus.duration} ease-in-out ${lotus.delay} infinite alternate`,
+          }}
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          {/* Center petal */}
+          <path
+            d="M32 8c-4 8-12 16-12 24s8 16 12 20c4-4 12-12 12-20S36 16 32 8z"
+            stroke="rgba(212,160,23,0.4)"
+            strokeWidth="1"
+            fill="none"
+          />
+          {/* Side petals */}
+          <path
+            d="M32 12c-8 4-16 12-20 16 4 4 12 8 20 8s16-4 20-8c-4-4-12-12-20-16z"
+            stroke="rgba(212,160,23,0.3)"
+            strokeWidth="1"
+            fill="none"
+          />
+          {/* Base */}
+          <ellipse
+            cx="32"
+            cy="44"
+            rx="8"
+            ry="3"
+            stroke="rgba(212,160,23,0.25)"
+            strokeWidth="0.5"
+            fill="none"
+          />
+        </svg>
       ))}
     </div>
   );

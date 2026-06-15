@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AuraAvatar from "./AuraAvatar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCart } from "@/contexts/CartContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { AvatarState } from "@/types";
 
 interface ChatHeaderProps {
@@ -15,6 +16,7 @@ interface ChatHeaderProps {
 export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: ChatHeaderProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const { totalItems } = useCart();
+  const { language } = useLanguage();
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function ChatHeader({ avatarState, onCartOpen, onHistoryOpen }: C
                   : "bg-emerald-400 shadow-emerald-400/50"
             }`} />
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Online — here to help you shine
+              {language === "si" ? "Online — ඔබට උදව් කරන්න මෙහි" : "Online — here to help you shine"}
             </p>
           </div>
         </div>

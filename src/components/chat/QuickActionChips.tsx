@@ -15,12 +15,65 @@ interface QuickActionChipsProps {
 }
 
 const defaultActions: DynamicAction[] = [
-  { label: "Browse categories", icon: "🛍️", text: "Show me all categories" },
-  { label: "Track order", icon: "📦", text: "I want to track my order" },
-  { label: "Help me find a gift", icon: "🎁", text: "I need help finding a gift" },
-  { label: "Electronics", icon: "📱", text: "Show me popular electronics" },
-  { label: "Groceries", icon: "🛒", text: "I need to buy groceries" },
+  { label: "Gift Ideas", icon: "🎁", text: "Help me find a gift for someone special" },
+  { label: "Cakes & Sweets", icon: "🎂", text: "Show me birthday cakes and sweets" },
+  { label: "Flowers", icon: "💐", text: "I want to send flowers" },
+  { label: "Browse All", icon: "🛍️", text: "Show me all categories" },
+  { label: "Track Order", icon: "📦", text: "I want to track my order" },
 ];
+
+// Sri Lankan festival-aware actions — shown based on time of year
+function getFestiveActions(): DynamicAction[] | null {
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed
+  const day = now.getDate();
+
+  // Sinhala & Tamil New Year season (April 1-20)
+  if (month === 3 && day <= 20) {
+    return [
+      { label: "අවුරුදු තෑගි", icon: "🪷", text: "Show me Avurudu gift ideas" },
+      { label: "Kevili & Sweets", icon: "🍬", text: "Show me traditional Avurudu sweets and kevili" },
+      { label: "New Year Outfits", icon: "👗", text: "Show me new clothes for Avurudu" },
+      { label: "Gift Hampers", icon: "🎁", text: "Show me Avurudu gift hampers" },
+      { label: "Browse All", icon: "🛍️", text: "Show me all categories" },
+    ];
+  }
+
+  // Vesak season (May 1-31)
+  if (month === 4) {
+    return [
+      { label: "Vesak Gifts", icon: "🪷", text: "Show me Vesak gift ideas" },
+      { label: "Vesak Lanterns", icon: "🏮", text: "I'm looking for Vesak decorations" },
+      { label: "White Clothing", icon: "🤍", text: "Show me white clothing for Vesak" },
+      { label: "Gift Ideas", icon: "🎁", text: "Help me find a gift" },
+      { label: "Browse All", icon: "🛍️", text: "Show me all categories" },
+    ];
+  }
+
+  // Christmas season (December 1-31)
+  if (month === 11) {
+    return [
+      { label: "Christmas Gifts", icon: "🎄", text: "Show me Christmas gift ideas" },
+      { label: "Christmas Cakes", icon: "🎂", text: "Show me Christmas cakes" },
+      { label: "Chocolates", icon: "🍫", text: "Show me chocolate gift boxes" },
+      { label: "Gift Hampers", icon: "🎁", text: "Show me Christmas gift hampers" },
+      { label: "Browse All", icon: "🛍️", text: "Show me all categories" },
+    ];
+  }
+
+  // Valentine's season (February 1-14)
+  if (month === 1 && day <= 14) {
+    return [
+      { label: "Valentine's Gifts", icon: "💝", text: "Show me Valentine's Day gifts" },
+      { label: "Roses & Flowers", icon: "💐", text: "Show me romantic flower bouquets" },
+      { label: "Chocolates", icon: "🍫", text: "Show me chocolate gifts for Valentine's" },
+      { label: "Gift Ideas", icon: "🎁", text: "Help me find a romantic gift" },
+      { label: "Browse All", icon: "🛍️", text: "Show me all categories" },
+    ];
+  }
+
+  return null; // No festive override
+}
 
 export default function QuickActionChips({
   onAction,
@@ -29,7 +82,7 @@ export default function QuickActionChips({
 }: QuickActionChipsProps) {
   if (dynamicActions && dynamicActions.length === 0) return null;
 
-  const actions = dynamicActions ? dynamicActions : defaultActions;
+  const actions = dynamicActions ? dynamicActions : (getFestiveActions() || defaultActions);
 
   return (
     <div className="flex flex-wrap justify-center gap-2.5 px-4 py-2">
