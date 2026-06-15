@@ -96,6 +96,12 @@ describe("classifyIntentByRules", () => {
     expect(classifyIntentByRules("hithaganna bari apple samsung phone")).toBe("shopping");
   });
 
+  it("detects Tanglish 'X da Y da' comparison pattern", () => {
+    expect(classifyIntentByRules("apple da samsung da hoda")).toBe("shopping");
+    expect(classifyIntentByRules("cake da chocolate da")).toBe("shopping");
+    expect(classifyIntentByRules("iphone da galaxy da mokada honda")).toBe("shopping");
+  });
+
   it("detects Sinhala Unicode product requests", () => {
     expect(classifyIntentByRules("මට cake එකක් ඕනෙ")).toBe("shopping");
     expect(classifyIntentByRules("chocolate ekak ganna one")).toBe("shopping");
