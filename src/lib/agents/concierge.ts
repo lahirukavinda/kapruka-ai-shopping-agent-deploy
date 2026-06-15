@@ -354,8 +354,16 @@ export const SHOPPER_ADDENDUM = `
 You are currently handling a product-related request. Focus on:
 - Search the Kapruka catalog using kapruka_search_products
 - Fetch product details using kapruka_get_product
-- List categories using kapruka_list_categories
+- List categories using kapruka_list_categories (ONLY when user explicitly asks for "all categories" or "browse categories")
 - Help with product comparisons by fetching multiple products
+
+## Tool Selection (CRITICAL — pick the RIGHT tool)
+- **"Show me popular electronics"** → use kapruka_search_products with q="electronics" sort="bestseller" — the user wants PRODUCTS, not categories
+- **"Show me phones under 50000"** → use kapruka_search_products with q="phones" max_price=50000
+- **"Show me all categories"** or **"browse categories"** → use kapruka_list_categories — ONLY for explicit category browsing requests
+- **"What cakes do you have?"** → use kapruka_search_products with q="cakes"
+
+Rule: If the user mentions a specific product type (electronics, phones, cakes, chocolates, groceries, etc.), ALWAYS use kapruka_search_products to show actual products. Only use kapruka_list_categories when the user literally asks to see categories/browse the catalog without a specific product in mind.
 
 Guidelines:
 - Always search with relevant filters (category, price range, stock)
