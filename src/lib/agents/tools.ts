@@ -2,6 +2,16 @@ import { tool } from "ai";
 import { z } from "zod";
 import { callMcpTool } from "@/lib/mcp/client";
 
+async function safeMcpCall(toolName: string, args: Record<string, unknown>): Promise<unknown> {
+  try {
+    return await callMcpTool(toolName, args);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    console.error(`MCP tool ${toolName} failed:`, msg);
+    return { error: true, message: `Service temporarily unavailable. Please try again in a moment.` };
+  }
+}
+
 export const kaprukaSearchProducts = tool({
   description:
     "Search the Kapruka product catalog by keyword with optional filters for category, price range, stock status, and sorting.",
@@ -21,7 +31,7 @@ export const kaprukaSearchProducts = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_search_products", { params: args });
+    return await safeMcpCall("kapruka_search_products", { params: args });
   },
 });
 
@@ -33,7 +43,7 @@ export const kaprukaGetProduct = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_get_product", { params: args });
+    return await safeMcpCall("kapruka_get_product", { params: args });
   },
 });
 
@@ -44,7 +54,7 @@ export const kaprukaListCategories = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_list_categories", { params: args });
+    return await safeMcpCall("kapruka_list_categories", { params: args });
   },
 });
 
@@ -56,7 +66,7 @@ export const kaprukaListDeliveryCities = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_list_delivery_cities", { params: args });
+    return await safeMcpCall("kapruka_list_delivery_cities", { params: args });
   },
 });
 
@@ -69,7 +79,7 @@ export const kaprukaCheckDelivery = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_check_delivery", { params: args });
+    return await safeMcpCall("kapruka_check_delivery", { params: args });
   },
 });
 
@@ -108,7 +118,7 @@ export const kaprukaCreateOrder = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_create_order", { params: args });
+    return await safeMcpCall("kapruka_create_order", { params: args });
   },
 });
 
@@ -119,7 +129,7 @@ export const kaprukaTrackOrder = tool({
     response_format: z.enum(["json", "markdown"]).optional().default("json"),
   }),
   execute: async (args) => {
-    return await callMcpTool("kapruka_track_order", { params: args });
+    return await safeMcpCall("kapruka_track_order", { params: args });
   },
 });
 

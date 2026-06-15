@@ -1,7 +1,7 @@
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  maxRetries = 3,
-  baseDelay = 1000
+  maxRetries = 1,
+  baseDelay = 500
 ): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
