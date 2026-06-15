@@ -98,6 +98,8 @@ Manual and automated test cases for verifying language detection, emotional supp
 - Promotions, achievements, celebrations
 - Search/technical errors
 - Excitement, curiosity, or positive contexts
+- **Normal shopping requests** ("I need groceries", "show me cakes", "I want chocolate")
+- **General questions** ("what categories do you have?", "how does delivery work?")
 
 | Input | Expected "Aiyo"? | Expected Response |
 |-------|------------------|-------------------|
@@ -111,6 +113,10 @@ Manual and automated test cases for verifying language detection, emotional supp
 | `my dog died` | Yes (own loss) | "Aiyo..." + condolences |
 | `job promotion` | No | "Congratulations!" / "Niyamai!" — NO "Aiyo" |
 | Search failed / API error | No | "Hmm, let me try again" — NO "Aiyo" |
+| `I need to buy groceries` | No (neutral shopping) | "Maru! 🥦🍚 What kind of groceries?" — NO "Aiyo" |
+| `show me birthday cakes` | No (neutral shopping) | "Shaa! 🎂 Birthday cake එකක් බලමු!" — NO "Aiyo" |
+| `I want chocolate` | No (neutral shopping) | "Chocolates බලමු! 🍫" — NO "Aiyo" |
+| `what categories do you have?` | No (informational) | Helpful response — NO "Aiyo" |
 
 ### "Shaa!" Usage Rule
 **"Shaa!" is ONLY for excitement, celebration, or wow moments.** NEVER for sad, stressed, or difficult situations.
@@ -391,7 +397,7 @@ These test cases simulate what a Kapruka competition judge would evaluate when o
 
 | Input | Expected Language | Expected Response |
 |-------|------------------|-------------------|
-| `මට cake එකක් ඕනෙ` | `si` (Sinhala Unicode detected) | Sinhala Unicode response about cakes |
+| `මට cake එකක් ඕනෙ` | `si` (Sinhala Unicode detected) | Sinhala Unicode response about cakes + **product search triggered** (real Kapruka products) |
 | `මට birthday gift එකක් ඕනෙ` | `si` | Sinhala response with gift suggestions |
 | `කොහොමද` | `si` | Sinhala greeting response |
 | `මොකද ඕනෙ` | `si` | Sinhala asking what they need |
@@ -403,7 +409,86 @@ These test cases simulate what a Kapruka competition judge would evaluate when o
 
 ---
 
-## 14. Adding New Test Cases
+## 14. Sinhala Cultural Intelligence (Manual — Evaluated at 97/100)
+
+These test cases verify the Sinhala/Sri Lankan cultural fixes from the 85→97 scoring improvement.
+
+### Product Hallucination Guard
+
+The AI MUST ONLY mention products returned by MCP tool calls. Never invent product names.
+
+| Input | Expected | NOT Expected |
+|-------|----------|--------------|
+| `mage yaluwa ta chocolate ekak one, budget 3000` | Real Kapruka products (e.g., Java brand chocolates with LKR prices) | Cadbury Dairy Milk, Ferrero Rocher, Lindt, or any non-Kapruka products |
+| `show me phones under 50000` | Products from MCP search results only | Samsung Galaxy, iPhone, or any guessed product names |
+| MCP returns 0 results | Culturally-appropriate fallback: "Aiyo, machan! Search karala hitiye namuth eka nathiwa" (informal) / "I wasn't able to find that" (formal) | Invented product suggestions |
+
+### Sinhala/Tanglish Product Search Triggering
+
+Sinhala Unicode and Tanglish product mentions MUST trigger `kapruka_search_products`.
+
+| Input | Expected Intent | Expected Behavior |
+|-------|----------------|--------------------|
+| `මට cake එකක් ඕනෙ` | `shopping` | Product search triggered, real cake products returned |
+| `chocolate ඕනෙ` | `shopping` | Product search for "chocolate" |
+| `flowers ganna one` | `shopping` | Product search for "flowers" |
+| `mama phone ekak ganna one` | `shopping` | Product search for "phone" |
+| `කේක්` (pure Sinhala for cake) | `shopping` | Product search for "cake" |
+
+### "Aiyo" Empathy Expression (Correct Usage)
+
+| Input | Expected Expression | Expected Response |
+|-------|--------------------|-----------|
+| `podi aulak machan` | **Aiyo** (empathy) | "Aiyo, machan! මොකද වුනේ? කියන්න — I'm here to listen." |
+| `I just got promoted!` | **Maru** (celebration) | "Maru! 🎉 Congratulations!" — NOT "Aiyo" |
+| `I need to buy groceries` | **Maru/Shaa/neutral** | Helpful shopping response — NEVER "Aiyo" |
+| `show me cakes` | **Shaa/neutral** | Product search response — NEVER "Aiyo" |
+| `work is killing me` | **Aiyo** (frustration) | "Aiyo, [mode]! That sounds tough." |
+| `my dog died` | **Aiyo** (grief) | "Aiyo... I'm so sorry." |
+
+### Script Purity (No Foreign Script Leakage)
+
+Responses MUST only contain Sinhala Unicode (U+0D80–U+0DFF) and Latin/English characters.
+
+| Scenario | Expected | NOT Expected |
+|----------|----------|--------------|
+| Any Sinhala/Tanglish response | Sinhala Unicode + English only | Japanese (例えば, こんにちは), Chinese (你好), Korean (안녕하세요) |
+| "for example" in Sinhala context | "for example" or "උදාහරණයක් විදිහට" | 例えば (Japanese) |
+| Product suggestions | Sinhala + English product names | Any CJK characters |
+
+### Conversational Product Wrapper Text
+
+Product results MUST be wrapped with personality text, not shown silently.
+
+| Mode | Expected Wrapper | NOT Expected |
+|------|------------------|--------------|
+| Machan/Bro | "Shaa! මේවා බලන්න, machan!" or similar | Silent "Found X products" with no personality |
+| Sis | "මේවා බලන්න! Hondama options ටික! ✨" | Just product cards with no text |
+| Sir/Madam | "Here are the options I found for you:" | Casual slang |
+| Sinhala | "මේවා බලන්න! ඔයාගේ budget එකට ගැලපෙනවා! 😊" | English-only wrapper |
+
+### Branding
+
+| Element | Expected | NOT Expected |
+|---------|----------|--------------|
+| Footer badge | "Powered by Kapruka × AI" | "Kapruka MCP × AI" or any internal tech naming |
+| Bot name transliteration | ඔරා (correct) | ඕරා (incorrect vowel) |
+
+### Sri Lankan Festival Awareness
+
+The AI should naturally weave in festival context when relevant.
+
+| Season | Expected Awareness |
+|--------|--------------------|
+| April (Aluth Avurudu) | Suggest sweets (kavum, kokis), new year hampers. Greeting: "සුභ අලුත් අවුරුද්දක් වේවා! 🎊" |
+| May (Vesak) | Suggest white flowers, lanterns. Avoid alcohol. Greeting: "සුභ වෙසක් දිනයක්! 🪷" |
+| December (Christmas) | Suggest cakes, hampers, decorations. Greeting: "Merry Christmas! 🎄" |
+| February (Valentine's) | Suggest romantic gifts. "Valentine's Day ළඟයි! ❤️" |
+| June (Father's Day) | "Happy Father's Day! Thaththa ta gift ekak? 👨‍👧" |
+
+---
+
+## 15. Adding New Test Cases
 
 When adding new Sinhala words or emotional patterns:
 
