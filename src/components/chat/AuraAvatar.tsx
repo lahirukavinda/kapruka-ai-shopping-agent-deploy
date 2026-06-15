@@ -12,7 +12,7 @@ interface AuraAvatarProps {
 const stateGlow: Record<AvatarState, string> = {
   idle: "rgba(212,160,23,0.4)",
   thinking: "rgba(167,139,250,0.5)",
-  excited: "rgba(251,146,60,0.5)",
+  excited: "rgba(212,160,23,0.5)",
   celebrating: "rgba(52,211,153,0.55)",
   empathetic: "rgba(244,114,182,0.45)",
 };
@@ -20,7 +20,7 @@ const stateGlow: Record<AvatarState, string> = {
 const stateBg: Record<AvatarState, [string, string]> = {
   idle: ["#D4A017", "#402970"],
   thinking: ["#a78bfa", "#8b5cf6"],
-  excited: ["#fb923c", "#f97316"],
+  excited: ["#D4A017", "#8b5cf6"],
   celebrating: ["#34d399", "#10b981"],
   empathetic: ["#f472b6", "#ec4899"],
 };

@@ -437,7 +437,7 @@ export default function ChatContainer() {
                 transition={{ delay: 0.35 }}
               >
                 <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
-                  I&apos;m <strong className="gradient-text font-bold">Aura</strong>, your divine shopping companion from the{" "}
+                  I&apos;m <strong className="gradient-text font-bold">Aura</strong>, your divine shopping companion from{" "}
                   <a href="https://www.kapruka.com" target="_blank" rel="noopener noreferrer" className="text-aura-gold hover:text-aura-halo underline decoration-aura-gold/30 hover:decoration-aura-gold transition-colors font-semibold">Kapruka</a>.
                 </p>
               </motion.div>
@@ -562,6 +562,9 @@ export default function ChatContainer() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.75 }}
               >
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">
+                  Or jump right in:
+                </p>
                 <QuickActionChips onAction={handleQuickAction} />
               </motion.div>
 
