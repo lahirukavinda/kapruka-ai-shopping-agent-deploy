@@ -3,6 +3,7 @@
 import { useState, useEffect, type RefObject, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatInputProps {
   onSubmit: (text: string) => void;
@@ -16,8 +17,15 @@ export default function ChatInput({
   inputRef,
 }: ChatInputProps) {
   const [text, setText] = useState("");
+  const { language } = useLanguage();
   const { isSupported, isListening, transcript, startListening, stopListening } =
     useVoiceInput("en");
+
+  const placeholder = language === "si"
+    ? "Aura ගෙන් ඕනෑම දෙයක් අහන්න..."
+    : language === "tanglish"
+      ? "Aura kiyan eka ahanna..."
+      : "Ask Aura anything...";
 
   useEffect(() => {
     if (transcript) setText(transcript);
@@ -67,7 +75,7 @@ export default function ChatInput({
                 handleSubmit(e);
               }
             }}
-            placeholder="Ask Aura anything..."
+            placeholder={placeholder}
             disabled={isLoading}
             className="premium-input chat-input w-full resize-none rounded-2xl border border-gray-200/60 dark:border-gray-700/60
               bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm
