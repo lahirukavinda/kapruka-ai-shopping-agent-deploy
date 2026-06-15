@@ -9,6 +9,9 @@ type Intent = "shopping" | "logistics" | "order" | "emotional" | "general";
 // Rule-based intent patterns to avoid an LLM call for common queries
 const SHOPPING_PATTERNS =
   /\b(show me|search|find|browse|look for|products?|items?|cakes?|flowers?|chocolates?|gifts?|buy|shop|categories|catalog|compare|cheaper|expensive|price|similar|recommend|suggest)\b/i;
+// Comparison/indecision patterns — detect "X or Y" / "X vs Y" / "can't decide" requests
+const COMPARISON_PATTERNS =
+  /\b(compare|vs\.?|versus|or\b.*\bwhich|which.*\bor\b|can't decide|cant decide|hithaganna ba|hithaganna bari|hithaganna nehe|better|difference between|X da Y da)\b.*\b(apple|samsung|iphone|galaxy|huawei|oppo|vivo|xiaomi|nokia|phone|laptop|tablet|camera|tv|cake|chocolate|flower|gift|product)/i;
 // Sinhala/Tanglish shopping patterns — detect product requests in any language
 const SINHALA_SHOPPING_PATTERNS =
   /\b(ganna|ganna one|one ekak|ekak one|ekak ganna|ගන්න|ඕනෙ|ඕන|ඕනෑ)\b.*\b(cake|phone|chocolate|gift|flower|laptop|saree|shirt|watch|toy|book|perfume|wine|grocery)\b|\b(cake|phone|chocolate|gift|flower|laptop|saree|shirt|watch|toy|book|perfume|wine|grocery)\b.*\b(ganna|ganna one|one ekak|ekak one|ekak ganna|ඕනෙ|ඕන|ඕනෑ|ගන්න)\b/i;
@@ -39,6 +42,7 @@ export function classifyIntentByRules(message: string): Intent | null {
   // Emotional patterns before shopping — empathy first
   if (EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
   if (SL_EMOTIONAL_PATTERNS.test(trimmed)) return "emotional";
+  if (COMPARISON_PATTERNS.test(trimmed)) return "shopping";
   if (SHOPPING_PATTERNS.test(trimmed)) return "shopping";
   // Sinhala/Tanglish product requests (e.g., "මට cake එකක් ඕනෙ")
   if (SINHALA_SHOPPING_PATTERNS.test(trimmed)) return "shopping";
